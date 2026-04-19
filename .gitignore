@@ -1,0 +1,14 @@
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+.wp-local/
+*.log
+*.swp
+*.swo
+*~
+.env
+.env.local
+thumbs.db
+dist/
+build/

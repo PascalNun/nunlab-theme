@@ -1,0 +1,98 @@
+.nunlab-admin-media__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+	margin: 1rem 0 1.25rem;
+}
+
+.nunlab-admin-media__list {
+	display: grid;
+	gap: 1rem;
+}
+
+.nunlab-admin-media__item {
+	display: grid;
+	grid-template-columns: 120px minmax(0, 1fr);
+	gap: 1rem;
+	padding: 1rem;
+	border: 1px solid #dcdcde;
+	border-radius: 14px;
+	background: #fff;
+}
+
+.nunlab-admin-media__preview {
+	display: grid;
+	gap: 0.45rem;
+	align-content: start;
+}
+
+.nunlab-admin-media__preview img,
+.nunlab-admin-media__placeholder {
+	display: block;
+	width: 100%;
+	height: 120px;
+	border-radius: 10px;
+	object-fit: cover;
+	background: #f2f2f2;
+}
+
+.nunlab-admin-media__caption,
+.nunlab-admin-media__item-type,
+.nunlab-admin-media__item-title {
+	margin: 0;
+}
+
+.nunlab-admin-media__caption {
+	color: #50575e;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.nunlab-admin-media__item-body {
+	display: grid;
+	gap: 0.85rem;
+}
+
+.nunlab-admin-media__item-type {
+	font-weight: 600;
+}
+
+.nunlab-admin-media__field {
+	display: grid;
+	gap: 0.35rem;
+}
+
+.nunlab-admin-media__field-label,
+.nunlab-admin-fields__label {
+	display: block;
+	font-weight: 600;
+}
+
+.nunlab-admin-media__poster-actions,
+.nunlab-admin-media__item-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem 1rem;
+}
+
+.nunlab-admin-fields {
+	display: grid;
+	gap: 1rem;
+}
+
+.nunlab-admin-fields__field {
+	margin: 0;
+}
+
+@media (max-width: 782px) {
+	.nunlab-admin-media__item {
+		grid-template-columns: 1fr;
+	}
+
+	.nunlab-admin-media__preview img,
+	.nunlab-admin-media__placeholder {
+		height: 180px;
+	}
+}

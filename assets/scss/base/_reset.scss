@@ -1,0 +1,59 @@
+/**
+ * Reset and Defaults
+ * 
+ * @package nunlab-theme
+ */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: $font-size-base;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family: $font-stack-system;
+	line-height: 1.6;
+	color: $color-primary;
+	background-color: $color-white;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+	font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	overflow-wrap: break-word;
+}
+
+ul,
+ol {
+	list-style: none;
+}

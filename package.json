@@ -1,0 +1,16 @@
+{
+  "name": "nunlab-theme",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Custom WordPress theme for N:UN Lab",
+  "scripts": {
+    "sass:build": "sass assets/scss/style.scss assets/css/style.css --style=expanded --no-source-map",
+    "sass:watch": "sass --watch assets/scss/style.scss:assets/css/style.css --style=expanded --no-source-map",
+    "lint:php": "find . -path './.wp-local' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l",
+    "wp:serve": "php -S 127.0.0.1:8080 -t .wp-local scripts/wp-router.php",
+    "wp:url": "php -d memory_limit=512M -d error_reporting=24575 /opt/homebrew/bin/wp --path=.wp-local option get siteurl"
+  },
+  "devDependencies": {
+    "sass": "^1.99.0"
+  }
+}

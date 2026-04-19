@@ -1,0 +1,47 @@
+/**
+ * SCSS Variables
+ * 
+ * @package nunlab-theme
+ */
+
+// Colors
+$color-primary: #161616;
+$color-secondary: #5f5b57;
+$color-light: #f4f1eb;
+$color-surface: #fbfaf7;
+$color-border: rgba(22, 22, 22, 0.12);
+$color-white: #ffffff;
+
+// Typography
+$font-stack-body: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-stack-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+$font-stack-system: $font-stack-body;
+$font-size-base: 16px;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 2rem;
+$spacing-xl: 3rem;
+$spacing-xxl: 4rem;
+
+// Breakpoints
+$bp-xs: 320px;
+$bp-sm: 576px;
+$bp-md: 768px;
+$bp-lg: 992px;
+$bp-xl: 1200px;
+$bp-xxl: 1400px;
+
+// Container
+$container-max-width: 1280px;
+$content-max-width: 760px;
+
+// Transitions
+$transition-default: 0.2s ease;
+$transition-smooth: 0.3s ease-in-out;
