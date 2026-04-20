@@ -34,30 +34,30 @@
 .site-header__inner::after {
 	position: absolute;
 	inset-inline: 0;
-	// Keep the divider crisp while letting the blur breathe slightly above and below it.
-	inset-block-start: calc(100% - 0.6rem);
-	block-size: 1.55rem;
-	background: rgba($color-surface, 0.09);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
+	// The line stays crisp, while a short falloff softens the handoff directly around it.
+	inset-block-start: calc(100% - 0.7rem);
+	block-size: 1.9rem;
+	background: rgba($color-surface, 0.14);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
 	mask-image: linear-gradient(
 		180deg,
 		transparent 0%,
-		rgba(0, 0, 0, 0.16) 14%,
-		rgba(0, 0, 0, 0.56) 34%,
-		rgba(0, 0, 0, 0.96) 40%,
-		rgba(0, 0, 0, 0.56) 52%,
-		rgba(0, 0, 0, 0.2) 76%,
+		rgba(0, 0, 0, 0.12) 12%,
+		rgba(0, 0, 0, 0.42) 28%,
+		rgba(0, 0, 0, 0.92) 38%,
+		rgba(0, 0, 0, 0.62) 50%,
+		rgba(0, 0, 0, 0.24) 72%,
 		transparent 100%
 	);
 	-webkit-mask-image: linear-gradient(
 		180deg,
 		transparent 0%,
-		rgba(0, 0, 0, 0.16) 14%,
-		rgba(0, 0, 0, 0.56) 34%,
-		rgba(0, 0, 0, 0.96) 40%,
-		rgba(0, 0, 0, 0.56) 52%,
-		rgba(0, 0, 0, 0.2) 76%,
+		rgba(0, 0, 0, 0.12) 12%,
+		rgba(0, 0, 0, 0.42) 28%,
+		rgba(0, 0, 0, 0.92) 38%,
+		rgba(0, 0, 0, 0.62) 50%,
+		rgba(0, 0, 0, 0.24) 72%,
 		transparent 100%
 	);
 	content: '';

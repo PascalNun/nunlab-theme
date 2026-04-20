@@ -31,7 +31,13 @@
 	line-height: 1.8;
 }
 
-.site-footer__legal a {
+.site-footer__legal-menu {
+	display: flex;
+	flex-wrap: wrap;
+	gap: $spacing-md;
+}
+
+.site-footer__legal-menu a {
 	color: $color-primary;
 	font-size: 0.95rem;
 }

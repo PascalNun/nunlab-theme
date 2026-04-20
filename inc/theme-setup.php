@@ -48,6 +48,7 @@ function nunlab_setup() {
 	register_nav_menus(
 		array(
 			'primary' => esc_html__( 'Primary Menu', 'nunlab-theme' ),
+			'legal'   => esc_html__( 'Legal Footer Menu', 'nunlab-theme' ),
 		)
 	);
 

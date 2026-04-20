@@ -28,9 +28,7 @@ if ( ! $manifesto_page instanceof WP_Post ) {
 				<p class="text-panel__lead"><?php echo esc_html( get_the_excerpt( $manifesto_page ) ); ?></p>
 			<?php endif; ?>
 
-			<div class="entry-content">
-				<?php echo wp_kses_post( apply_filters( 'the_content', $manifesto_page->post_content ) ); ?>
-			</div>
+			<?php echo nunlab_render_editorial_sections( $manifesto_page->post_content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 	</div>
 </section>

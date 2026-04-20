@@ -120,9 +120,12 @@ update_post_meta( $page_ids['home'], 'nunlab_hero_intro', 'A curated body of wor
 update_post_meta( $page_ids['home'], 'nunlab_work_eyebrow', 'Work' );
 update_post_meta( $page_ids['home'], 'nunlab_work_heading', 'A structured index of selected work, research, and ideas.' );
 
-$menu_name = 'Primary Navigation';
-$menu      = wp_get_nav_menu_object( $menu_name );
-$menu_id   = $menu ? (int) $menu->term_id : (int) wp_create_nav_menu( $menu_name );
+$menu_name  = 'Primary Navigation';
+$menu       = wp_get_nav_menu_object( $menu_name );
+$menu_id    = $menu ? (int) $menu->term_id : (int) wp_create_nav_menu( $menu_name );
+$legal_name = 'Legal Footer Navigation';
+$legal_menu = wp_get_nav_menu_object( $legal_name );
+$legal_id   = $legal_menu ? (int) $legal_menu->term_id : (int) wp_create_nav_menu( $legal_name );
 
 nunlab_ensure_menu_item(
 	$menu_id,
@@ -160,7 +163,19 @@ foreach ( array( 'about', 'notebook', 'plugins', 'contact' ) as $slug ) {
 
 $locations            = get_theme_mod( 'nav_menu_locations', array() );
 $locations['primary'] = $menu_id;
+$locations['legal']   = $legal_id;
 set_theme_mod( 'nav_menu_locations', $locations );
+
+nunlab_ensure_menu_item(
+	$legal_id,
+	array(
+		'menu-item-title'     => 'Imprint',
+		'menu-item-object-id' => $page_ids['imprint'],
+		'menu-item-object'    => 'page',
+		'menu-item-type'      => 'post_type',
+		'menu-item-status'    => 'publish',
+	)
+);
 
 echo wp_json_encode(
 	array(
@@ -172,6 +187,7 @@ echo wp_json_encode(
 		'plugins_page' => $page_ids['plugins'],
 		'contact_page' => $page_ids['contact'],
 		'menu_id'      => $menu_id,
+		'legal_menu_id' => $legal_id,
 	),
 	JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
 ) . PHP_EOL;

@@ -399,7 +399,7 @@
 			var scrollRange = Math.max(stage.offsetHeight - window.innerHeight, 1);
 			var progress = clamp((-rect.top / scrollRange), 0, 1);
 			var workTop = workSection ? workSection.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
-			var heroExitThreshold = window.innerWidth <= 768 ? -10 : -18;
+			var heroExitThreshold = header.offsetHeight + (window.innerWidth <= 768 ? 18 : 28);
 			var onHero =
 				rect.top <= header.offsetHeight &&
 				rect.bottom > header.offsetHeight + 32 &&

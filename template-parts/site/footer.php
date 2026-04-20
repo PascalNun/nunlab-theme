@@ -8,12 +8,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-$imprint_page = get_page_by_path( 'imprint' );
-
-if ( ! $imprint_page instanceof WP_Post ) {
-	$imprint_page = get_page_by_path( 'impressum' );
-}
 ?>
 <footer class="site-footer">
 	<div class="site-footer__inner">
@@ -24,11 +18,18 @@ if ( ! $imprint_page instanceof WP_Post ) {
 			</p>
 		</div>
 
-		<?php if ( $imprint_page instanceof WP_Post && 'publish' === $imprint_page->post_status ) : ?>
+		<?php if ( has_nav_menu( 'legal' ) ) : ?>
 			<nav class="site-footer__legal" aria-label="<?php esc_attr_e( 'Legal Navigation', 'nunlab-theme' ); ?>">
-				<a href="<?php echo esc_url( get_permalink( $imprint_page ) ); ?>">
-					<?php echo esc_html( get_the_title( $imprint_page ) ); ?>
-				</a>
+				<?php
+				wp_nav_menu(
+					array(
+						'theme_location' => 'legal',
+						'container'      => false,
+						'menu_class'     => 'site-footer__legal-menu',
+						'fallback_cb'    => false,
+					)
+				);
+				?>
 			</nav>
 		<?php endif; ?>
 

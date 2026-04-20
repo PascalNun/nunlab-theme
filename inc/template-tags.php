@@ -122,6 +122,99 @@ function nunlab_get_front_page_source_page( $meta_key, $fallback_slug = '' ) {
 }
 
 /**
+ * Split block content into editorial sections.
+ *
+ * Each heading starts a new section. Non-heading blocks are collected under the
+ * current section so front-page editorial layouts can restart their columns
+ * cleanly at each heading.
+ *
+ * @param string $content Raw block content.
+ * @return array<int, array{heading:string, blocks:array<int, string>}>
+ */
+function nunlab_get_editorial_sections( $content ) {
+	$content  = (string) $content;
+	$blocks   = parse_blocks( $content );
+	$sections = array();
+	$current  = array(
+		'heading' => '',
+		'blocks'  => array(),
+	);
+
+	if ( empty( $blocks ) ) {
+		return array();
+	}
+
+	foreach ( $blocks as $block ) {
+		$rendered = trim( render_block( $block ) );
+
+		if ( '' === trim( wp_strip_all_tags( $rendered ) ) ) {
+			continue;
+		}
+
+		if ( 'core/heading' === $block['blockName'] ) {
+			if ( '' !== $current['heading'] || ! empty( $current['blocks'] ) ) {
+				$sections[] = $current;
+			}
+
+			$current = array(
+				'heading' => $rendered,
+				'blocks'  => array(),
+			);
+			continue;
+		}
+
+		$current['blocks'][] = $rendered;
+	}
+
+	if ( '' !== $current['heading'] || ! empty( $current['blocks'] ) ) {
+		$sections[] = $current;
+	}
+
+	return $sections;
+}
+
+/**
+ * Render editorial sections for front-page text areas.
+ *
+ * @param string $content Raw block content.
+ * @return string
+ */
+function nunlab_render_editorial_sections( $content ) {
+	$sections = nunlab_get_editorial_sections( $content );
+
+	if ( empty( $sections ) ) {
+		return '';
+	}
+
+	ob_start();
+	?>
+	<div class="editorial-flow">
+		<?php foreach ( $sections as $section ) : ?>
+			<section class="editorial-section">
+				<?php if ( '' !== $section['heading'] ) : ?>
+					<div class="editorial-section__heading">
+						<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $section['blocks'] ) ) : ?>
+					<div class="editorial-section__columns">
+						<?php foreach ( $section['blocks'] as $block_html ) : ?>
+							<div class="editorial-section__block">
+								<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+			</section>
+		<?php endforeach; ?>
+	</div>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
  * Return a theme asset URI when the file exists.
  *
  * @param string $relative_path Relative path from theme root.

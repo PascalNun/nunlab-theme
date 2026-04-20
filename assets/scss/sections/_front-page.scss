@@ -151,6 +151,62 @@
 	margin-bottom: $spacing-md;
 }
 
+.home-section--about .home-section__inner {
+	margin-top: $spacing-lg;
+	padding-top: $spacing-xl;
+	border-top: 1px solid $color-border;
+}
+
+.home-section :is(.text-panel--about, .text-panel--manifesto) {
+	display: grid;
+	gap: clamp(1.25rem, 2.8vw, 2rem);
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	border-radius: 0;
+}
+
+.text-panel--about .text-panel__lead,
+.text-panel--manifesto .text-panel__lead {
+	max-width: 54rem;
+	margin: 0;
+	font-size: clamp(1.18rem, 2vw, 1.5rem);
+	line-height: 1.45;
+}
+
+.editorial-flow {
+	display: grid;
+	gap: clamp(2rem, 4vw, 3rem);
+}
+
+.editorial-section {
+	display: grid;
+	gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.editorial-section__heading :is(h2, h3, h4, h5, h6) {
+	margin: 0;
+	font-size: clamp(2rem, 4vw, 3.1rem);
+	line-height: 1.02;
+	letter-spacing: -0.04em;
+}
+
+.editorial-section__columns {
+	column-count: 3;
+	column-gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.editorial-section__block {
+	break-inside: avoid;
+	-webkit-column-break-inside: avoid;
+	margin-bottom: clamp(1rem, 2vw, 1.5rem);
+}
+
+.editorial-section__block > * {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
 .work-directory__group {
 	padding-top: $spacing-sm;
 }
@@ -366,6 +422,10 @@
 	.work-preview-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
+
+	.editorial-section__columns {
+		column-count: 2;
+	}
 }
 
 @media (max-width: $bp-md) {
@@ -389,6 +449,16 @@
 
 	.work-preview-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.home-section--about .home-section__inner {
+		margin-top: $spacing-md;
+		padding-top: $spacing-lg;
+	}
+
+	.editorial-section__columns {
+		column-count: 1;
+		column-gap: 0;
 	}
 
 	.work-directory__title {
