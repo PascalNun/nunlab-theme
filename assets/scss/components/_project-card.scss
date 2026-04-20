@@ -1,0 +1,98 @@
+@use '../base/variables' as *;
+
+/**
+ * Shared project card building blocks.
+ */
+
+.project-card {
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
+.project-card__frame,
+.project-card__toggle {
+	display: block;
+	inline-size: 100%;
+	color: $color-white;
+}
+
+.project-card__toggle {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+}
+
+.project-card__media {
+	position: relative;
+	display: block;
+	margin-bottom: 0;
+	overflow: hidden;
+	border-radius: var(--nunlab-radius-md);
+	background: #cfcfcf;
+	aspect-ratio: 424 / 635;
+	touch-action: pan-y;
+}
+
+.project-card__image,
+.project-card__placeholder {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+}
+
+.project-card__image {
+	object-fit: cover;
+	transition: transform $transition-smooth;
+}
+
+.project-card__placeholder {
+	background: linear-gradient(180deg, #d4d1cd 0%, #c5c2bd 100%);
+}
+
+.project-card__overlay {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(217, 217, 217, 0) 32%, rgba(28, 29, 31, 0.18) 68%, rgba(28, 29, 31, 0.72) 100%);
+}
+
+.project-card__body {
+	position: absolute;
+	inset-inline: 1rem;
+	inset-block-end: 1rem;
+	z-index: 1;
+	min-inline-size: 0;
+}
+
+.project-card__title {
+	margin-bottom: 0.4rem;
+	color: $color-white;
+	font-size: clamp(2rem, 3vw, 3.125rem);
+	font-weight: $font-weight-semibold;
+	line-height: 0.98;
+	letter-spacing: -0.04em;
+}
+
+.project-card__excerpt {
+	max-width: 24rem;
+	color: rgba(251, 250, 246, 0.94);
+	font-size: 0.875rem;
+	line-height: 1.28;
+}
+
+.project-card__excerpt p {
+	margin-bottom: 0;
+}
+
+:is(.project-card__frame:hover, .project-card__toggle:hover) .project-card__image {
+	transform: scale(1.03);
+}
+
+@media (max-width: $bp-md) {
+	.project-card__title {
+		font-size: clamp(1.8rem, 9vw, 2.6rem);
+	}
+}

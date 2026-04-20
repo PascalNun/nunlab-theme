@@ -8,15 +8,32 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$site_name = get_bloginfo( 'name' );
+
+$logo_dark_uri   = nunlab_get_theme_asset_uri( 'assets/images/brand/Logo1_Dark.svg' );
+$logo_light_uri  = nunlab_get_theme_asset_uri( 'assets/images/brand/Logo1_Light.svg' );
+$search_dark_uri = nunlab_get_theme_asset_uri( 'assets/icons/search_icon_Dark.svg' );
+$search_light_uri = nunlab_get_theme_asset_uri( 'assets/icons/search_icon_light.svg' );
+
+$has_logo_assets   = '' !== $logo_dark_uri && '' !== $logo_light_uri;
+$has_search_assets = '' !== $search_dark_uri && '' !== $search_light_uri;
 ?>
 <header class="site-header">
 	<div class="site-header__inner">
 		<div class="site-brand">
-			<?php if ( has_custom_logo() ) : ?>
+			<?php if ( $has_logo_assets ) : ?>
+				<a class="site-brand__asset-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $site_name ); ?>">
+					<span class="site-brand__asset-stack" aria-hidden="true">
+						<img class="site-brand__asset site-brand__asset--dark" src="<?php echo esc_url( $logo_dark_uri ); ?>" alt="" />
+						<img class="site-brand__asset site-brand__asset--light" src="<?php echo esc_url( $logo_light_uri ); ?>" alt="" />
+					</span>
+				</a>
+			<?php elseif ( has_custom_logo() ) : ?>
 				<?php the_custom_logo(); ?>
 			<?php else : ?>
 				<a class="site-brand__link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-					<?php bloginfo( 'name' ); ?>
+					<?php echo esc_html( $site_name ); ?>
 				</a>
 			<?php endif; ?>
 		</div>
@@ -66,7 +83,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 					aria-expanded="false"
 					data-search-toggle
 				>
-					<span class="site-header__search-indicator" aria-hidden="true"></span>
+					<?php if ( $has_search_assets ) : ?>
+						<span class="site-header__search-icon-stack" aria-hidden="true">
+							<img class="site-header__search-icon site-header__search-icon--dark" src="<?php echo esc_url( $search_dark_uri ); ?>" alt="" />
+							<img class="site-header__search-icon site-header__search-icon--light" src="<?php echo esc_url( $search_light_uri ); ?>" alt="" />
+						</span>
+					<?php else : ?>
+						<span class="site-header__search-indicator" aria-hidden="true"></span>
+					<?php endif; ?>
 				</button>
 			</div>
 		</div>

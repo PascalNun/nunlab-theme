@@ -94,6 +94,56 @@ function nunlab_get_front_page_field( $meta_key, $default = '' ) {
 }
 
 /**
+ * Return a published page chosen as a front-page section source.
+ *
+ * @param string $meta_key      Front-page meta key that stores the page ID.
+ * @param string $fallback_slug Optional fallback page slug.
+ * @return WP_Post|null
+ */
+function nunlab_get_front_page_source_page( $meta_key, $fallback_slug = '' ) {
+	$front_page_id = (int) get_option( 'page_on_front' );
+
+	if ( ! $front_page_id ) {
+		return null;
+	}
+
+	$page_id = absint( get_post_meta( $front_page_id, $meta_key, true ) );
+	$page    = $page_id ? get_post( $page_id ) : null;
+
+	if ( ! $page instanceof WP_Post && '' !== $fallback_slug ) {
+		$page = get_page_by_path( $fallback_slug );
+	}
+
+	if ( ! $page instanceof WP_Post || 'page' !== $page->post_type || 'publish' !== $page->post_status ) {
+		return null;
+	}
+
+	return $page;
+}
+
+/**
+ * Return a theme asset URI when the file exists.
+ *
+ * @param string $relative_path Relative path from theme root.
+ * @return string
+ */
+function nunlab_get_theme_asset_uri( $relative_path ) {
+	$relative_path = ltrim( (string) $relative_path, '/' );
+
+	if ( '' === $relative_path ) {
+		return '';
+	}
+
+	$asset_path = NUNLAB_THEME_DIR . '/' . $relative_path;
+
+	if ( ! file_exists( $asset_path ) ) {
+		return '';
+	}
+
+	return NUNLAB_THEME_URI . '/' . $relative_path;
+}
+
+/**
  * Return stored legacy project gallery attachment IDs.
  *
  * @param int $post_id Project post ID.
@@ -326,28 +376,6 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 	}
 
 	return $media;
-}
-
-/**
- * Return project gallery-like items for legacy template usage.
- *
- * @param int    $post_id Project post ID.
- * @param string $size    Requested image size.
- * @return array<int, array<string, string|int>>
- */
-function nunlab_get_project_gallery_items( $post_id = 0, $size = 'large' ) {
-	$media_items = nunlab_get_project_media_items( $post_id, $size );
-	$gallery     = array();
-
-	foreach ( $media_items as $item ) {
-		$gallery[] = array(
-			'id'  => isset( $item['id'] ) ? (int) $item['id'] : 0,
-			'url' => isset( $item['poster_url'] ) ? (string) $item['poster_url'] : '',
-			'alt' => isset( $item['alt'] ) ? (string) $item['alt'] : '',
-		);
-	}
-
-	return $gallery;
 }
 
 /**

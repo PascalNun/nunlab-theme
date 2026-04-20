@@ -18,19 +18,11 @@ function nunlab_enqueue_assets() {
 	$style_version = file_exists( $style_path ) ? (string) filemtime( $style_path ) : NUNLAB_THEME_VERSION;
 	$script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : NUNLAB_THEME_VERSION;
 
-	// Theme fonts.
-	wp_enqueue_style(
-		'nunlab-theme-fonts',
-		'https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap',
-		array(),
-		null
-	);
-
 	// Main theme stylesheet.
 	wp_enqueue_style(
 		'nunlab-theme-style',
 		NUNLAB_THEME_URI . '/assets/css/style.css',
-		array( 'nunlab-theme-fonts' ),
+		array(),
 		$style_version,
 		'all'
 	);

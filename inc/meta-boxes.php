@@ -176,6 +176,7 @@ function nunlab_register_theme_meta() {
 			'nunlab_work_eyebrow' => 'string',
 			'nunlab_work_heading' => 'string',
 			'nunlab_about_page_id' => 'integer',
+			'nunlab_manifesto_page_id' => 'integer',
 		) as $meta_key => $meta_type
 	) {
 		register_post_meta(
@@ -299,7 +300,8 @@ function nunlab_render_front_page_meta_box( $post ) {
 		),
 	);
 	$about_page_id = (int) get_post_meta( $post->ID, 'nunlab_about_page_id', true );
-	$about_pages   = get_pages(
+	$manifesto_page_id = (int) get_post_meta( $post->ID, 'nunlab_manifesto_page_id', true );
+	$source_pages      = get_pages(
 		array(
 			'sort_column' => 'menu_order,post_title',
 			'exclude'     => array( (int) $post->ID ),
@@ -331,13 +333,28 @@ function nunlab_render_front_page_meta_box( $post ) {
 			</label>
 			<select id="nunlab_about_page_id" name="nunlab_about_page_id" class="widefat">
 				<option value="0"><?php esc_html_e( 'Select a page', 'nunlab-theme' ); ?></option>
-				<?php foreach ( $about_pages as $page ) : ?>
+				<?php foreach ( $source_pages as $page ) : ?>
 					<option value="<?php echo esc_attr( $page->ID ); ?>"<?php selected( $about_page_id, (int) $page->ID ); ?>>
 						<?php echo esc_html( $page->post_title ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
 			<span class="description"><?php esc_html_e( 'This page is rendered as the About section below Work on the front page.', 'nunlab-theme' ); ?></span>
+		</p>
+
+		<p class="nunlab-admin-fields__field">
+			<label class="nunlab-admin-fields__label" for="nunlab_manifesto_page_id">
+				<?php esc_html_e( 'Manifesto Section Source Page', 'nunlab-theme' ); ?>
+			</label>
+			<select id="nunlab_manifesto_page_id" name="nunlab_manifesto_page_id" class="widefat">
+				<option value="0"><?php esc_html_e( 'Select a page', 'nunlab-theme' ); ?></option>
+				<?php foreach ( $source_pages as $page ) : ?>
+					<option value="<?php echo esc_attr( $page->ID ); ?>"<?php selected( $manifesto_page_id, (int) $page->ID ); ?>>
+						<?php echo esc_html( $page->post_title ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<span class="description"><?php esc_html_e( 'This page is rendered as the Manifesto section further down the front page.', 'nunlab-theme' ); ?></span>
 		</p>
 	</div>
 	<?php
@@ -429,6 +446,16 @@ function nunlab_save_front_page_fields( $post_id ) {
 			update_post_meta( $post_id, 'nunlab_about_page_id', $about_page_id );
 		} else {
 			delete_post_meta( $post_id, 'nunlab_about_page_id' );
+		}
+	}
+
+	if ( isset( $_POST['nunlab_manifesto_page_id'] ) ) {
+		$manifesto_page_id = absint( wp_unslash( $_POST['nunlab_manifesto_page_id'] ) );
+
+		if ( $manifesto_page_id ) {
+			update_post_meta( $post_id, 'nunlab_manifesto_page_id', $manifesto_page_id );
+		} else {
+			delete_post_meta( $post_id, 'nunlab_manifesto_page_id' );
 		}
 	}
 }

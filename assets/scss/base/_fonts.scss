@@ -1,0 +1,41 @@
+// Self-hosted font faces used by the theme.
+
+@font-face {
+	font-family: 'Barlow';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../fonts/barlow/barlow-400-latin.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Barlow';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('../fonts/barlow/barlow-500-latin.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Barlow';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('../fonts/barlow/barlow-600-latin.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Barlow Condensed';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('../fonts/barlow-condensed/barlow-condensed-500-latin.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Barlow Condensed';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('../fonts/barlow-condensed/barlow-condensed-600-latin.woff2') format('woff2');
+}

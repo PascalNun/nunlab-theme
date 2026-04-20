@@ -15,7 +15,6 @@ get_header();
 <main id="primary" class="site-main">
 	<div class="archive-shell">
 		<header class="archive-header">
-			<p class="archive-eyebrow"><?php esc_html_e( 'Notebook', 'nunlab-theme' ); ?></p>
 			<h1 class="archive-title">
 				<?php
 				$posts_page_id = (int) get_option( 'page_for_posts' );
@@ -28,7 +27,7 @@ get_header();
 		</header>
 
 		<?php if ( have_posts() ) : ?>
-			<div class="content-grid">
+			<div class="content-grid content-grid--notebook">
 				<?php
 				while ( have_posts() ) :
 					the_post();

@@ -1,0 +1,43 @@
+@use '../base/variables' as *;
+
+/**
+ * Footer and legal link.
+ */
+
+.site-footer {
+	padding: 0 $spacing-md $spacing-xl;
+}
+
+.site-footer__inner {
+	display: grid;
+	gap: $spacing-lg;
+	padding-top: $spacing-xl;
+	border-top: 1px solid $color-border;
+}
+
+.site-footer__title {
+	color: $color-primary;
+	font-size: 2rem;
+	font-weight: $font-weight-semibold;
+	letter-spacing: -0.045em;
+	text-transform: none;
+}
+
+.site-footer__description {
+	max-width: 42rem;
+	margin-bottom: 0;
+	color: $color-secondary;
+	font-size: 1rem;
+	line-height: 1.8;
+}
+
+.site-footer__legal a {
+	color: $color-primary;
+	font-size: 0.95rem;
+}
+
+@media (max-width: $bp-md) {
+	.site-footer__title {
+		font-size: 1.65rem;
+	}
+}

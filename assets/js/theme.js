@@ -1,12 +1,9 @@
-/**
- * Theme JavaScript
- * 
- * @package nunlab-theme
- */
+// Theme interactions.
 
 (function () {
 	'use strict';
 
+	// Keep touch navigation light and dependency-free.
 	var bindHorizontalSwipe = function (element, onPrev, onNext, shouldHandle) {
 		var startX = 0;
 		var startY = 0;
@@ -90,6 +87,47 @@
 		frame.hidden = true;
 	};
 
+	var animateScrollTo = function (targetY, duration) {
+		var root = document.documentElement;
+		var startY = window.scrollY;
+		var delta = targetY - startY;
+		var startTime = null;
+		var previousScrollBehavior = root.style.scrollBehavior;
+
+		if (Math.abs(delta) < 2) {
+			return;
+		}
+
+		var easeInOutCubic = function (progress) {
+			return progress < 0.5
+				? 4 * progress * progress * progress
+				: 1 - Math.pow(-2 * progress + 2, 3) / 2;
+		};
+
+		root.style.scrollBehavior = 'auto';
+
+		var step = function (timestamp) {
+			var progress;
+
+			if (null === startTime) {
+				startTime = timestamp;
+			}
+
+			progress = Math.min((timestamp - startTime) / duration, 1);
+			window.scrollTo(0, startY + delta * easeInOutCubic(progress));
+
+			if (progress < 1) {
+				window.requestAnimationFrame(step);
+				return;
+			}
+
+			root.style.scrollBehavior = previousScrollBehavior;
+		};
+
+		window.requestAnimationFrame(step);
+	};
+
+	// Overlay search stays separate so it can close the mobile menu cleanly.
 	var initSearchOverlay = function () {
 		var body = document.body;
 		var header = document.querySelector('.site-header');
@@ -186,6 +224,7 @@
 		});
 	};
 
+	// The header collapses into its compact navigation state before mobile.
 	var initMobileMenu = function () {
 		var body = document.body;
 		var header = document.querySelector('.site-header');
@@ -227,23 +266,16 @@
 			}
 		});
 
-		if (window.matchMedia) {
-			var desktopQuery = window.matchMedia('(min-width: 769px)');
+		var desktopQuery = window.matchMedia('(min-width: 1101px)');
 
-			var syncMenuState = function (event) {
-				if (event.matches) {
-					setOpenState(false);
-				}
-			};
-
-			if (desktopQuery.addEventListener) {
-				desktopQuery.addEventListener('change', syncMenuState);
-			} else if (desktopQuery.addListener) {
-				desktopQuery.addListener(syncMenuState);
+		desktopQuery.addEventListener('change', function (event) {
+			if (event.matches) {
+				setOpenState(false);
 			}
-		}
+		});
 	};
 
+	// Small scroll compression keeps the sticky header calm.
 	var initStickyHeader = function () {
 		var header = document.querySelector('.site-header');
 
@@ -259,6 +291,384 @@
 		window.addEventListener('scroll', syncHeaderState, { passive: true });
 	};
 
+	// The hero video is scrubbed by scroll instead of autoplaying freely.
+	var initHeroStage = function () {
+		var stage = document.querySelector('[data-hero-stage]');
+		var video = document.querySelector('[data-hero-video]');
+		var sequenceFrame = document.querySelector('[data-hero-sequence-frame]');
+		var content = document.querySelector('[data-hero-content]');
+		var header = document.querySelector('.site-header');
+		var workSection = document.getElementById('work');
+		var ticking = false;
+		var duration = 0;
+		var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var userAgent = window.navigator.userAgent || '';
+		var isIOS =
+			/iPad|iPhone|iPod/.test(userAgent) ||
+			(window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+		var isFirefox = /firefox/i.test(userAgent);
+		var supportsWebP = (function () {
+			var canvas;
+
+			try {
+				canvas = document.createElement('canvas');
+
+				if (!canvas.getContext || !canvas.getContext('2d')) {
+					return false;
+				}
+
+				return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+			} catch (error) {
+				return false;
+			}
+		})();
+		var sequenceCount = parseInt(stage ? stage.getAttribute('data-hero-sequence-count') || '0' : '0', 10);
+		var sequenceBaseJpg = stage ? stage.getAttribute('data-hero-sequence-base-jpg') || '' : '';
+		var sequenceBaseWebp = stage ? stage.getAttribute('data-hero-sequence-base-webp') || '' : '';
+		var sequenceExt = supportsWebP && sequenceBaseWebp ? 'webp' : 'jpg';
+		var sequenceBase = 'webp' === sequenceExt ? sequenceBaseWebp : sequenceBaseJpg;
+		var sequenceDigits = parseInt(stage ? stage.getAttribute('data-hero-sequence-digits') || '3' : '3', 10);
+		var useSequenceFallback =
+			!!sequenceFrame &&
+			!prefersReducedMotion &&
+			sequenceCount > 0 &&
+			(isIOS || isFirefox);
+		var useScrollScrub = !!video && !prefersReducedMotion && !useSequenceFallback;
+		var currentSequenceIndex = -1;
+
+		if (!stage || !header) {
+			return;
+		}
+
+		var clamp = function (value, min, max) {
+			return Math.min(Math.max(value, min), max);
+		};
+
+		var buildSequenceUrl = function (index) {
+			return (
+				sequenceBase +
+				String(index + 1).padStart(sequenceDigits, '0') +
+				'.' +
+				sequenceExt
+			);
+		};
+
+		var preloadSequenceFrames = function () {
+			var index = 0;
+
+			if (!useSequenceFallback) {
+				return;
+			}
+
+			var loadNext = function () {
+				var image;
+
+				if (index >= sequenceCount) {
+					return;
+				}
+
+				image = new Image();
+				image.decoding = 'async';
+				image.src = buildSequenceUrl(index);
+				index += 1;
+				window.setTimeout(loadNext, 24);
+			};
+
+			loadNext();
+		};
+
+		var syncSequenceFrame = function (progress) {
+			var nextIndex;
+
+			if (!useSequenceFallback || !sequenceFrame) {
+				return;
+			}
+
+			nextIndex = Math.min(sequenceCount - 1, Math.round(progress * (sequenceCount - 1)));
+
+			if (nextIndex === currentSequenceIndex) {
+				return;
+			}
+
+			currentSequenceIndex = nextIndex;
+			sequenceFrame.src = buildSequenceUrl(nextIndex);
+		};
+
+		var setHeroState = function () {
+			var rect = stage.getBoundingClientRect();
+			var scrollRange = Math.max(stage.offsetHeight - window.innerHeight, 1);
+			var progress = clamp((-rect.top / scrollRange), 0, 1);
+			var workTop = workSection ? workSection.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
+			var heroExitThreshold = window.innerWidth <= 768 ? -10 : -18;
+			var onHero =
+				rect.top <= header.offsetHeight &&
+				rect.bottom > header.offsetHeight + 32 &&
+				workTop > heroExitThreshold;
+
+			stage.style.setProperty('--hero-progress', progress.toFixed(4));
+
+			if (content) {
+				content.style.setProperty('--hero-progress', progress.toFixed(4));
+			}
+
+			header.classList.toggle('site-header--on-hero', onHero);
+			header.classList.toggle('site-header--surface', !onHero);
+
+			if (useSequenceFallback) {
+				syncSequenceFrame(progress);
+			}
+
+			if (video && duration && useScrollScrub) {
+				var targetTime = duration * progress;
+
+				if (Math.abs(video.currentTime - targetTime) > 0.03) {
+					video.currentTime = targetTime;
+				}
+			}
+
+			ticking = false;
+		};
+
+		var requestSync = function () {
+			if (ticking) {
+				return;
+			}
+
+			ticking = true;
+			window.requestAnimationFrame(setHeroState);
+		};
+
+		if (video) {
+			stage.classList.toggle('hero-stage--sequence', useSequenceFallback);
+
+			if (useSequenceFallback) {
+				if (sequenceFrame) {
+					sequenceFrame.hidden = false;
+					sequenceFrame.src = buildSequenceUrl(0);
+				}
+
+				video.pause();
+				preloadSequenceFrames();
+			} else {
+				video.pause();
+
+				var syncDuration = function () {
+					if (!Number.isFinite(video.duration) || video.duration <= 0) {
+						return;
+					}
+
+					duration = Math.max(video.duration - Math.min(0.12, video.duration * 0.04), 0);
+					requestSync();
+				};
+
+				if (video.readyState >= 1) {
+					syncDuration();
+				}
+
+				video.addEventListener('loadedmetadata', syncDuration);
+				video.addEventListener('loadeddata', syncDuration);
+			}
+		}
+
+		setHeroState();
+		window.addEventListener('scroll', requestSync, { passive: true });
+		window.addEventListener('resize', requestSync);
+	};
+
+	// The homepage nav should highlight the section currently in view.
+	var initSectionAwareNav = function () {
+		var header = document.querySelector('.site-header');
+		var navigation = document.querySelector('.site-navigation');
+		var heroStage = document.querySelector('[data-hero-stage]');
+		var links;
+		var sectionLinks = [];
+		var trackedLinks = [];
+		var homeLink = null;
+		var ticking = false;
+
+		if (!document.body.classList.contains('is-homepage') || !header || !navigation) {
+			return;
+		}
+
+		var normalizePath = function (path) {
+			return path.replace(/\/+$/, '') || '/';
+		};
+
+		var getHeaderOffset = function () {
+			return header.offsetHeight + 24;
+		};
+
+		var getSectionTargetY = function (section) {
+			var styles = window.getComputedStyle(section);
+			var scrollMarginTop = parseFloat(styles.scrollMarginTop || '0');
+			var paddingTop = parseFloat(styles.paddingTop || '0');
+			var sectionTop = section.getBoundingClientRect().top + window.scrollY;
+
+			if ('work' === section.id) {
+				return sectionTop - header.offsetHeight + 12;
+			}
+
+			var landingInset = Math.max(24, Math.min(paddingTop - 24, 96));
+
+			if (scrollMarginTop) {
+				return sectionTop + landingInset - scrollMarginTop;
+			}
+
+			return sectionTop + landingInset - getHeaderOffset();
+		};
+
+		var setActiveLink = function (activeLink) {
+			trackedLinks.forEach(function (link) {
+				var item = link.closest('li');
+
+				if (item) {
+					item.classList.remove('is-section-active');
+				}
+
+				if ('location' === link.getAttribute('aria-current')) {
+					link.removeAttribute('aria-current');
+				}
+			});
+
+			navigation.classList.toggle('has-section-current', !!activeLink);
+
+			if (!activeLink) {
+				return;
+			}
+
+			var activeItem = activeLink.closest('li');
+
+			if (activeItem) {
+				activeItem.classList.add('is-section-active');
+			}
+
+			activeLink.setAttribute('aria-current', 'location');
+		};
+
+		var syncActiveLink = function () {
+			var marker = window.scrollY + getHeaderOffset() + window.innerHeight * 0.18;
+			var activeLink = homeLink;
+
+			sectionLinks.forEach(function (entry) {
+				if (marker >= entry.section.offsetTop) {
+					activeLink = entry.link;
+				}
+			});
+
+			setActiveLink(activeLink);
+			ticking = false;
+		};
+
+		links = Array.prototype.slice.call(navigation.querySelectorAll('a'));
+
+		links.forEach(function (link) {
+			var itemUrl;
+			var sectionId;
+			var section;
+
+			try {
+				itemUrl = new URL(link.getAttribute('href'), window.location.href);
+			} catch (error) {
+				return;
+			}
+
+			if (normalizePath(itemUrl.pathname) !== normalizePath(window.location.pathname)) {
+				return;
+			}
+
+			if (!itemUrl.hash) {
+				if (!homeLink) {
+					homeLink = link;
+					trackedLinks.push(link);
+				}
+
+				return;
+			}
+
+			sectionId = decodeURIComponent(itemUrl.hash.slice(1));
+			section = document.getElementById(sectionId);
+
+			if (!section) {
+				return;
+			}
+
+			sectionLinks.push({
+				link: link,
+				section: section,
+			});
+			trackedLinks.push(link);
+		});
+
+		if (!trackedLinks.length) {
+			return;
+		}
+
+		sectionLinks.sort(function (left, right) {
+			return left.section.offsetTop - right.section.offsetTop;
+		});
+
+		trackedLinks.forEach(function (link) {
+			link.addEventListener('click', function (event) {
+				var itemUrl;
+				var targetId;
+				var targetSection;
+				var heroActive;
+				var targetY;
+
+				setActiveLink(link);
+
+				try {
+					itemUrl = new URL(link.getAttribute('href'), window.location.href);
+				} catch (error) {
+					return;
+				}
+
+				if (!itemUrl.hash) {
+					if (normalizePath(itemUrl.pathname) === normalizePath(window.location.pathname)) {
+						event.preventDefault();
+						animateScrollTo(0, window.scrollY > window.innerHeight * 0.6 ? 900 : 650);
+					}
+
+					return;
+				}
+
+				targetId = decodeURIComponent(itemUrl.hash.slice(1));
+				targetSection = document.getElementById(targetId);
+
+				if (!targetSection) {
+					return;
+				}
+
+				heroActive =
+					heroStage &&
+					heroStage.getBoundingClientRect().bottom > window.innerHeight * 0.45;
+
+				if (!heroActive) {
+					return;
+				}
+
+				event.preventDefault();
+				targetY = getSectionTargetY(targetSection);
+				animateScrollTo(targetY, 1100);
+			});
+		});
+
+		var requestSync = function () {
+			if (ticking) {
+				return;
+			}
+
+			ticking = true;
+			window.requestAnimationFrame(syncActiveLink);
+		};
+
+		syncActiveLink();
+		window.addEventListener('scroll', requestSync, { passive: true });
+		window.addEventListener('resize', requestSync);
+		window.addEventListener('hashchange', requestSync);
+	};
+
+	// Home page work cards reuse one interactive pattern across all sections.
 	var initWorkListings = function () {
 		var groups = document.querySelectorAll('[data-work-group]');
 
@@ -590,6 +1000,7 @@
 		});
 	};
 
+	// Single project pages use the same lightweight gallery logic.
 	var initProjectGalleries = function () {
 		var galleries = document.querySelectorAll('[data-project-gallery]');
 
@@ -696,6 +1107,8 @@
 		initSearchOverlay();
 		initMobileMenu();
 		initStickyHeader();
+		initHeroStage();
+		initSectionAwareNav();
 		initWorkListings();
 		initProjectGalleries();
 	});

@@ -1,0 +1,125 @@
+@use '../base/variables' as *;
+
+/**
+ * Full-screen search layer.
+ */
+
+.search-layer {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: flex;
+	justify-content: center;
+	padding: clamp(6rem, 18vh, 10rem) $spacing-md $spacing-lg;
+	background: rgba($color-surface, 0.64);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.search-layer[hidden] {
+	display: none;
+}
+
+.search-layer.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.search-layer__panel {
+	inline-size: min(100%, 54rem);
+}
+
+.search-layer__form {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: $spacing-md;
+	padding: 0.5rem 0.6rem 0.5rem 1.6rem;
+	border: 1px solid rgba($color-primary, 0.32);
+	border-radius: 999px;
+	background: rgba($color-white, 0.9);
+	box-shadow: 0 1.25rem 3rem rgba($color-primary, 0.08);
+}
+
+.search-layer__input {
+	inline-size: 100%;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: $color-primary;
+	font-size: clamp(2rem, 4vw, 3rem);
+	font-weight: $font-weight-regular;
+	line-height: 1;
+}
+
+.search-layer__input::placeholder {
+	color: rgba($color-primary, 0.72);
+}
+
+.search-layer__input:focus {
+	outline: none;
+}
+
+.search-layer__submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 4.5rem;
+	block-size: 4.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: $color-primary;
+	cursor: pointer;
+}
+
+.search-layer__meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: $spacing-md;
+	padding: 0.9rem 0.4rem 0;
+}
+
+.search-layer__hint,
+.search-layer__close {
+	color: rgba($color-primary, 0.72);
+	font-size: 0.95rem;
+	line-height: 1.4;
+}
+
+.search-layer__close {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.search-layer__close:is(:hover, :focus-visible) {
+	color: $color-primary;
+	outline: none;
+}
+
+@media (max-width: $bp-md) {
+	.search-layer {
+		padding-top: clamp(5rem, 12vh, 6.5rem);
+	}
+
+	.search-layer__form {
+		padding-left: 1.15rem;
+	}
+
+	.search-layer__submit {
+		inline-size: 3.5rem;
+		block-size: 3.5rem;
+	}
+
+	.search-layer__meta {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}

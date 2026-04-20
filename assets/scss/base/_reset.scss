@@ -1,8 +1,6 @@
-/**
- * Reset and Defaults
- * 
- * @package nunlab-theme
- */
+@use 'variables' as *;
+
+// Reset and shared defaults.
 
 *,
 *::before,
@@ -22,7 +20,6 @@ body {
 	font-family: $font-stack-system;
 	line-height: 1.6;
 	color: $color-primary;
-	background-color: $color-white;
 }
 
 img,

@@ -1,10 +1,6 @@
-/**
- * SCSS Variables
- * 
- * @package nunlab-theme
- */
+// Theme tokens.
 
-// Colors
+// Color
 $color-primary: #161616;
 $color-secondary: #5f5b57;
 $color-light: #f4f1eb;
@@ -12,7 +8,7 @@ $color-surface: #fbfaf7;
 $color-border: rgba(22, 22, 22, 0.12);
 $color-white: #ffffff;
 
-// Typography
+// Type
 $font-stack-body: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 $font-stack-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
 $font-stack-system: $font-stack-body;
@@ -35,13 +31,14 @@ $bp-xs: 320px;
 $bp-sm: 576px;
 $bp-md: 768px;
 $bp-lg: 992px;
+$bp-menu: 1100px;
 $bp-xl: 1200px;
 $bp-xxl: 1400px;
 
-// Container
+// Layout
 $container-max-width: 1280px;
 $content-max-width: 760px;
 
-// Transitions
+// Motion
 $transition-default: 0.2s ease;
 $transition-smooth: 0.3s ease-in-out;

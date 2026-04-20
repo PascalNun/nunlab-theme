@@ -1,21 +1,22 @@
-/**
- * Main SCSS entry point
- * 
- * @package nunlab-theme
- */
+// Main theme stylesheet entry.
+// Order stays flat on purpose:
+// foundation -> layout chrome -> components -> page/section specifics.
 
-// Variables
-@import 'base/variables';
+@use 'base/fonts';
+@use 'base/reset';
+@use 'base/typography';
 
-// Base styles
-@import 'base/reset';
-@import 'base/typography';
+@use 'layouts/shell';
+@use 'layouts/header';
+@use 'layouts/footer';
 
-// Utilities
-@import 'utilities/spacing';
+@use 'components/buttons';
+@use 'components/content-cards';
+@use 'components/project-card';
+@use 'components/project-media';
+@use 'components/search-overlay';
 
-// Layouts
-@import 'layouts/site';
+@use 'pages/content';
+@use 'pages/work-archive';
 
-// Sections
-@import 'sections/front-page';
+@use 'sections/front-page';

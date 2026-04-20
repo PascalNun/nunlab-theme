@@ -1,0 +1,80 @@
+@use '../base/variables' as *;
+
+/**
+ * Shared archive, page, and single-entry content views.
+ */
+
+.archive-header,
+.entry-header {
+	margin-bottom: $spacing-xl;
+}
+
+:is(.entry--page .entry-header, .entry--page .entry-content, .entry--single .entry-header, .entry--single .entry-content) {
+	max-width: 52rem;
+}
+
+.archive-eyebrow {
+	margin-bottom: $spacing-sm;
+	color: $color-secondary;
+	font-size: 0.8rem;
+	font-weight: $font-weight-medium;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+:is(.archive-title, .entry-title) {
+	margin-bottom: $spacing-md;
+	color: $color-primary;
+	font-size: clamp(2.4rem, 5vw, 4.5rem);
+	font-weight: $font-weight-semibold;
+	letter-spacing: -0.03em;
+}
+
+:is(.archive-description, .entry-meta, .entry-lead) {
+	max-width: 42rem;
+	color: $color-secondary;
+	font-size: 1rem;
+	line-height: 1.8;
+}
+
+.entry-meta {
+	font-size: 0.9rem;
+}
+
+.entry-lead {
+	font-size: 1.1rem;
+}
+
+.entry-content {
+	max-width: $content-max-width;
+	color: $color-primary;
+}
+
+.entry-content > * + * {
+	margin-top: $spacing-lg;
+}
+
+.entry-content p {
+	margin-bottom: 0;
+}
+
+.posts-navigation {
+	margin-top: $spacing-xl;
+}
+
+.posts-navigation .nav-links {
+	display: flex;
+	justify-content: space-between;
+	gap: $spacing-md;
+}
+
+.error-404 {
+	padding-top: $spacing-xxl;
+	text-align: center;
+}
+
+@media (max-width: $bp-md) {
+	:is(.archive-title, .entry-title) {
+		font-size: clamp(2rem, 11vw, 3rem);
+	}
+}

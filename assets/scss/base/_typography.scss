@@ -1,8 +1,6 @@
-/**
- * Typography
- * 
- * @package nunlab-theme
- */
+@use 'variables' as *;
+
+// Core typography.
 
 h1,
 h2,
@@ -13,6 +11,7 @@ h6 {
 	font-weight: $font-weight-semibold;
 	line-height: 1.2;
 	margin-bottom: $spacing-md;
+	text-wrap: balance;
 }
 
 h1 {
@@ -30,11 +29,13 @@ h3 {
 p {
 	margin-bottom: $spacing-md;
 	line-height: 1.7;
+	text-wrap: pretty;
 }
 
 a {
 	color: $color-primary;
 	text-decoration: none;
+	text-decoration-skip-ink: auto;
 	transition: opacity $transition-default;
 
 	&:hover {

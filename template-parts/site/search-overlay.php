@@ -8,6 +8,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$search_dark_uri = nunlab_get_theme_asset_uri( 'assets/icons/search_icon_Dark.svg' );
 ?>
 <div id="site-search-layer" class="search-layer" hidden data-search-layer>
 	<div class="search-layer__panel" role="dialog" aria-modal="true" aria-labelledby="site-search-title">
@@ -24,7 +26,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 				data-search-input
 			/>
 			<button class="search-layer__submit" type="submit" aria-label="<?php esc_attr_e( 'Submit search', 'nunlab-theme' ); ?>">
-				<span class="site-header__search-indicator site-header__search-indicator--large" aria-hidden="true"></span>
+				<?php if ( '' !== $search_dark_uri ) : ?>
+					<img class="site-header__search-icon site-header__search-icon--overlay" src="<?php echo esc_url( $search_dark_uri ); ?>" alt="" aria-hidden="true" />
+				<?php else : ?>
+					<span class="site-header__search-indicator site-header__search-indicator--large" aria-hidden="true"></span>
+				<?php endif; ?>
 			</button>
 		</form>
 		<div class="search-layer__meta">

@@ -1,0 +1,88 @@
+@use '../base/variables' as *;
+
+/**
+ * Shared grids and content panel treatments.
+ */
+
+:is(.content-grid, .practice-grid) {
+	display: grid;
+	gap: $spacing-lg;
+}
+
+.content-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:is(.content-grid--search, .content-grid--projects, .content-grid--notebook) {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:where(.content-card, .practice-card, .text-panel, .content-empty) {
+	padding: $spacing-lg;
+	border: 1px solid $color-border;
+	border-radius: var(--nunlab-radius-md);
+	background: $color-white;
+}
+
+.content-card {
+	display: flex;
+	flex-direction: column;
+	min-inline-size: 0;
+}
+
+.content-card__media {
+	display: block;
+	margin: calc(-1 * $spacing-lg) calc(-1 * $spacing-lg) $spacing-lg;
+	overflow: hidden;
+	border-radius: var(--nunlab-radius-md) var(--nunlab-radius-md) 0 0;
+	background: #d2d2d2;
+}
+
+.content-card__image {
+	display: block;
+	inline-size: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+}
+
+.content-card__meta {
+	min-block-size: 1.5rem;
+	margin-bottom: $spacing-sm;
+	color: $color-secondary;
+	font-size: 0.875rem;
+}
+
+:is(.content-card__title, .practice-card__title, .content-empty__title) {
+	margin-bottom: $spacing-sm;
+	font-size: 1.35rem;
+}
+
+:is(.content-card__excerpt, .text-panel p) {
+	color: $color-primary;
+}
+
+.content-card__excerpt,
+.content-card__excerpt p,
+.text-panel p {
+	margin-bottom: 0;
+}
+
+:where(.practice-card, .text-panel, .content-empty) {
+	min-inline-size: 0;
+}
+
+.practice-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: $bp-lg) {
+	:is(.content-grid--search, .content-grid--projects, .content-grid--notebook) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: $bp-md) {
+	:is(.content-grid, .content-grid--search, .content-grid--projects, .content-grid--notebook, .practice-grid) {
+		grid-template-columns: 1fr;
+	}
+}

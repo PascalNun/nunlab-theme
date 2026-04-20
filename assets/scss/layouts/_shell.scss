@@ -1,0 +1,72 @@
+@use '../base/variables' as *;
+
+/**
+ * Site shell, shared containers, and page spacing.
+ */
+
+:root {
+	color-scheme: light;
+	--nunlab-radius-md: 1.5rem;
+	--nunlab-radius-lg: 1.75rem;
+	--nunlab-shadow-soft: 0 1rem 2.5rem rgba(22, 22, 22, 0.05);
+	--nunlab-shadow-raised: 0 1rem 2.5rem rgba(22, 22, 22, 0.08);
+	--nunlab-safe-top: env(safe-area-inset-top, 0px);
+	--nunlab-header-offset: calc(6.9rem + var(--nunlab-safe-top));
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background: $color-surface;
+	font-family: $font-stack-body;
+}
+
+body:is(.has-search-overlay, .has-mobile-menu) {
+	overflow: hidden;
+}
+
+.site-shell {
+	min-height: 100vh;
+}
+
+.site-main {
+	display: block;
+	padding: $spacing-xl $spacing-md $spacing-xxl;
+}
+
+.site-main--front-page {
+	padding: 0 0 $spacing-xxl;
+}
+
+:is(.site-header__inner, .home-section__inner, .archive-shell, .content-shell, .site-footer__inner) {
+	max-width: $container-max-width;
+	margin-inline: auto;
+}
+
+:is(.archive-shell, .content-shell) {
+	padding-top: $spacing-xl;
+}
+
+:is(.content-shell, .content-shell--project) {
+	max-width: $container-max-width;
+}
+
+.content-shell--narrow {
+	max-width: 40rem;
+}
+
+@media (max-width: $bp-md) {
+	:root {
+		--nunlab-header-offset: calc(5.9rem + var(--nunlab-safe-top));
+	}
+
+	.site-main {
+		padding-top: $spacing-lg;
+	}
+
+	.site-main--front-page {
+		padding-top: 0;
+	}
+}

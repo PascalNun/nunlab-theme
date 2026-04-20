@@ -13,9 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Add custom body classes.
  */
 function nunlab_body_classes( $classes ) {
-	// Add class if using homepage template.
-	if ( is_home() || is_front_page() ) {
+	// Only the actual front page should trigger the homepage hero/header behavior.
+	if ( is_front_page() ) {
 		$classes[] = 'is-homepage';
+	}
+
+	if ( is_home() && ! is_front_page() ) {
+		$classes[] = 'is-posts-index';
 	}
 
 	// Add class for single posts/pages.
@@ -39,10 +43,9 @@ function nunlab_primary_menu_section_anchors( $items, $args ) {
 		return $items;
 	}
 
-	$front_page_id = (int) get_option( 'page_on_front' );
-	$about_page_id = $front_page_id ? (int) get_post_meta( $front_page_id, 'nunlab_about_page_id', true ) : 0;
-	$about_page    = $about_page_id ? get_post( $about_page_id ) : get_page_by_path( 'about' );
-	$anchors       = array(
+	$about_page     = nunlab_get_front_page_source_page( 'nunlab_about_page_id', 'about' );
+	$manifesto_page = nunlab_get_front_page_source_page( 'nunlab_manifesto_page_id', 'manifesto' );
+	$anchors        = array(
 		'work'  => array(
 			'url'          => get_post_type_archive_link( 'project' ),
 			'anchor_front' => '#work',
@@ -52,6 +55,11 @@ function nunlab_primary_menu_section_anchors( $items, $args ) {
 			'url'          => ( $about_page instanceof WP_Post ) ? get_permalink( $about_page ) : '',
 			'anchor_front' => '#about',
 			'anchor_site'  => home_url( '/#about' ),
+		),
+		'manifesto' => array(
+			'url'          => ( $manifesto_page instanceof WP_Post ) ? get_permalink( $manifesto_page ) : '',
+			'anchor_front' => '#manifesto',
+			'anchor_site'  => home_url( '/#manifesto' ),
 		),
 	);
 
@@ -88,3 +96,41 @@ function nunlab_tune_search_queries( $query ) {
 	$query->set( 'post_type', array( 'post', 'page', 'project' ) );
 }
 add_action( 'pre_get_posts', 'nunlab_tune_search_queries' );
+
+/**
+ * Output theme favicon assets when no WordPress site icon is set.
+ *
+ * SVG is the preferred browser icon. PNG stays as the fallback for browsers
+ * and contexts that still expect a raster icon.
+ */
+function nunlab_output_theme_favicons() {
+	if ( function_exists( 'has_site_icon' ) && has_site_icon() ) {
+		return;
+	}
+
+	$favicon_svg_path = NUNLAB_THEME_DIR . '/assets/images/brand/favicon.svg';
+	$favicon_svg_uri  = NUNLAB_THEME_URI . '/assets/images/brand/favicon.svg';
+	$favicon_png_path = NUNLAB_THEME_DIR . '/assets/images/brand/favicon-512.png';
+	$favicon_png_uri  = NUNLAB_THEME_URI . '/assets/images/brand/favicon-512.png';
+
+	$has_svg = file_exists( $favicon_svg_path );
+	$has_png = file_exists( $favicon_png_path );
+
+	if ( ! $has_svg && ! $has_png ) {
+		return;
+	}
+
+	if ( $has_svg ) :
+		?>
+		<link rel="icon" href="<?php echo esc_url( $favicon_svg_uri ); ?>" type="image/svg+xml" sizes="any" />
+		<?php
+	endif;
+
+	if ( $has_png ) :
+		?>
+		<link rel="alternate icon" href="<?php echo esc_url( $favicon_png_uri ); ?>" type="image/png" sizes="512x512" />
+		<link rel="apple-touch-icon" href="<?php echo esc_url( $favicon_png_uri ); ?>" />
+		<?php
+	endif;
+}
+add_action( 'wp_head', 'nunlab_output_theme_favicons', 1 );
