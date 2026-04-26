@@ -19,6 +19,9 @@ function nunlab_setup() {
 	// Enable theme support for post thumbnails.
 	add_theme_support( 'post-thumbnails' );
 
+	// Larger generated size for project galleries and expanded project cards.
+	add_image_size( 'nunlab-project-large', 2400, 0, false );
+
 	// Enable theme support for a custom logo.
 	add_theme_support(
 		'custom-logo',

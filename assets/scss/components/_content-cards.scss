@@ -30,6 +30,11 @@
 	min-inline-size: 0;
 }
 
+.content-grid--notebook .content-card {
+	border-color: transparent;
+	box-shadow: var(--nunlab-shadow-soft);
+}
+
 .content-card__media {
 	display: block;
 	margin: calc(-1 * $spacing-lg) calc(-1 * $spacing-lg) $spacing-lg;

@@ -15,7 +15,7 @@ $project_excerpt = trim( wp_strip_all_tags( get_the_excerpt() ) );
 	<a class="project-card__frame" href="<?php the_permalink(); ?>">
 		<div class="project-card__media">
 			<?php if ( has_post_thumbnail() ) : ?>
-				<?php the_post_thumbnail( 'large', array( 'class' => 'project-card__image' ) ); ?>
+				<?php the_post_thumbnail( 'nunlab-project-large', array( 'class' => 'project-card__image' ) ); ?>
 			<?php else : ?>
 				<span class="project-card__placeholder"></span>
 			<?php endif; ?>

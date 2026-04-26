@@ -9,9 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$media_items   = nunlab_get_project_media_items( get_the_ID(), 'large' );
+$media_items   = nunlab_get_project_media_items( get_the_ID(), 'nunlab-project-large' );
 $project_terms = get_the_terms( get_the_ID(), 'project_type' );
 $eyebrow       = __( 'Project', 'nunlab-theme' );
+$title_line_one = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_one', true ) );
+$title_line_two = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_two', true ) );
+$detail_content = nunlab_render_project_editorial_content( get_the_content( null, false ) );
 
 if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 	$eyebrow = implode( ' / ', wp_list_pluck( $project_terms, 'name' ) );
@@ -20,7 +23,18 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 <article id="post-<?php the_ID(); ?>" <?php post_class( 'entry entry--project' ); ?>>
 	<header class="entry-header">
 		<p class="archive-eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
-		<h1 class="entry-title"><?php the_title(); ?></h1>
+		<h1 class="entry-title entry-title--project-presentation">
+			<?php if ( '' !== $title_line_one && '' !== $title_line_two ) : ?>
+				<span class="entry-title__line entry-title__line--primary"><?php echo esc_html( $title_line_one ); ?></span>
+				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
+			<?php elseif ( '' !== $title_line_one ) : ?>
+				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_one ); ?></span>
+			<?php elseif ( '' !== $title_line_two ) : ?>
+				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
+			<?php else : ?>
+				<span class="entry-title__line entry-title__line--emphasis"><?php the_title(); ?></span>
+			<?php endif; ?>
+		</h1>
 		<?php if ( has_excerpt() ) : ?>
 			<p class="entry-lead"><?php echo esc_html( get_the_excerpt() ); ?></p>
 		<?php endif; ?>
@@ -85,11 +99,17 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 		</section>
 	<?php elseif ( has_post_thumbnail() ) : ?>
 		<figure class="entry-media entry-media--project">
-			<?php the_post_thumbnail( 'large' ); ?>
+			<?php the_post_thumbnail( 'nunlab-project-large' ); ?>
 		</figure>
 	<?php endif; ?>
 
-	<div class="entry-content">
-		<?php the_content(); ?>
-	</div>
+	<?php if ( '' !== $detail_content ) : ?>
+		<div class="entry-content entry-content--project-editorial">
+			<?php echo $detail_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		</div>
+	<?php else : ?>
+		<div class="entry-content">
+			<?php the_content(); ?>
+		</div>
+	<?php endif; ?>
 </article>

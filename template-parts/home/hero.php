@@ -88,8 +88,6 @@ foreach ( $hero_posters as $poster_path => $poster_uri ) {
 			<?php if ( ! empty( $hero_sources ) ) : ?>
 				<video
 					class="hero-stage__video"
-					autoplay
-					loop
 					muted
 					playsinline
 					webkit-playsinline="true"

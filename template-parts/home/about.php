@@ -28,7 +28,7 @@ if ( ! $about_page instanceof WP_Post ) {
 				<p class="text-panel__lead"><?php echo esc_html( get_the_excerpt( $about_page ) ); ?></p>
 			<?php endif; ?>
 
-			<?php echo nunlab_render_editorial_sections( $about_page->post_content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo nunlab_render_editorial_sections( $about_page->post_content, 'flow' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 	</div>
 </section>

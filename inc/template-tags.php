@@ -10,6 +10,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Determine whether rendered block markup still contains visible non-text media.
+ *
+ * @param string $html Rendered block markup.
+ * @return bool
+ */
+function nunlab_block_has_visible_media_markup( $html ) {
+	$html = (string) $html;
+
+	if ( '' === trim( $html ) ) {
+		return false;
+	}
+
+	return 1 === preg_match( '/<(img|figure|video|iframe|svg|canvas|audio|picture)\b/i', $html );
+}
+
+/**
  * Print a post date for notebook entries.
  */
 function nunlab_posted_on() {
@@ -147,7 +163,11 @@ function nunlab_get_editorial_sections( $content ) {
 	foreach ( $blocks as $block ) {
 		$rendered = trim( render_block( $block ) );
 
-		if ( '' === trim( wp_strip_all_tags( $rendered ) ) ) {
+		if ( '' === $rendered ) {
+			continue;
+		}
+
+		if ( '' === trim( wp_strip_all_tags( $rendered ) ) && ! nunlab_block_has_visible_media_markup( $rendered ) ) {
 			continue;
 		}
 
@@ -177,9 +197,10 @@ function nunlab_get_editorial_sections( $content ) {
  * Render editorial sections for front-page text areas.
  *
  * @param string $content Raw block content.
+ * @param string $layout  Rendering mode. Accepts 'stacked', 'flow', or 'continuous'.
  * @return string
  */
-function nunlab_render_editorial_sections( $content ) {
+function nunlab_render_editorial_sections( $content, $layout = 'stacked' ) {
 	$sections = nunlab_get_editorial_sections( $content );
 
 	if ( empty( $sections ) ) {
@@ -188,30 +209,75 @@ function nunlab_render_editorial_sections( $content ) {
 
 	ob_start();
 	?>
-	<div class="editorial-flow">
-		<?php foreach ( $sections as $section ) : ?>
-			<section class="editorial-section">
+	<?php if ( 'continuous' === $layout ) : ?>
+		<div class="editorial-flow editorial-flow--continuous">
+			<?php foreach ( $sections as $section ) : ?>
 				<?php if ( '' !== $section['heading'] ) : ?>
-					<div class="editorial-section__heading">
+					<div class="editorial-flow__block editorial-flow__block--heading">
 						<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endif; ?>
 
-				<?php if ( ! empty( $section['blocks'] ) ) : ?>
-					<div class="editorial-section__columns">
-						<?php foreach ( $section['blocks'] as $block_html ) : ?>
-							<div class="editorial-section__block">
-								<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							</div>
-						<?php endforeach; ?>
+				<?php foreach ( $section['blocks'] as $block_html ) : ?>
+					<div class="editorial-flow__block editorial-flow__block--body">
+						<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-				<?php endif; ?>
-			</section>
-		<?php endforeach; ?>
-	</div>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
+		</div>
+	<?php else : ?>
+		<div class="editorial-flow<?php echo 'flow' === $layout ? ' editorial-flow--sequential' : ''; ?>">
+			<?php foreach ( $sections as $section ) : ?>
+				<section class="editorial-section">
+					<?php if ( '' !== $section['heading'] ) : ?>
+						<div class="editorial-section__heading<?php echo 'flow' === $layout ? ' editorial-section__heading--continuous' : ''; ?>">
+							<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $section['blocks'] ) ) : ?>
+						<?php if ( 'flow' === $layout ) : ?>
+							<div class="editorial-section__columns editorial-section__columns--flow" data-editorial-columns>
+								<?php foreach ( $section['blocks'] as $block_html ) : ?>
+									<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								<?php endforeach; ?>
+							</div>
+						<?php else : ?>
+							<div class="editorial-section__columns">
+								<?php foreach ( $section['blocks'] as $block_html ) : ?>
+									<div class="editorial-section__block">
+										<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						<?php endif; ?>
+					<?php endif; ?>
+				</section>
+			<?php endforeach; ?>
+		</div>
+	<?php endif; ?>
 	<?php
 
 	return trim( (string) ob_get_clean() );
+}
+
+/**
+ * Render one continuous editorial flow for project bodies.
+ *
+ * This keeps the whole body content inside a single text stream so it can be
+ * laid out like an article instead of a set of separate content groups.
+ *
+ * @param string $content Raw block content.
+ * @return string
+ */
+function nunlab_render_project_editorial_content( $content ) {
+	$content = trim( (string) $content );
+
+	if ( '' === trim( wp_strip_all_tags( $content ) ) ) {
+		return '';
+	}
+
+	return nunlab_render_editorial_sections( $content, 'continuous' );
 }
 
 /**

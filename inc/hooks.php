@@ -98,6 +98,31 @@ function nunlab_tune_search_queries( $query ) {
 add_action( 'pre_get_posts', 'nunlab_tune_search_queries' );
 
 /**
+ * Raise WordPress' "big image" threshold so uploads are not scaled down as
+ * aggressively at 2560px.
+ *
+ * @return int
+ */
+function nunlab_big_image_size_threshold() {
+	return 4096;
+}
+add_filter( 'big_image_size_threshold', 'nunlab_big_image_size_threshold' );
+
+/**
+ * Keep generated image derivatives high enough quality for project media.
+ *
+ * Existing uploads need regenerated thumbnails before this affects their
+ * already-created intermediate sizes.
+ *
+ * @return int
+ */
+function nunlab_image_editor_quality() {
+	return 92;
+}
+add_filter( 'jpeg_quality', 'nunlab_image_editor_quality' );
+add_filter( 'wp_editor_set_quality', 'nunlab_image_editor_quality' );
+
+/**
  * Output theme favicon assets when no WordPress site icon is set.
  *
  * SVG is the preferred browser icon. PNG stays as the fallback for browsers

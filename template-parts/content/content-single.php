@@ -12,19 +12,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 <article id="post-<?php the_ID(); ?>" <?php post_class( 'entry entry--single' ); ?>>
 	<header class="entry-header">
 		<p class="archive-eyebrow"><?php esc_html_e( 'Notebook', 'nunlab-theme' ); ?></p>
-		<h1 class="entry-title"><?php the_title(); ?></h1>
-		<div class="entry-meta">
+		<div class="entry-meta entry-meta--notebook">
 			<?php nunlab_posted_on(); ?>
 		</div>
+		<h1 class="entry-title"><?php the_title(); ?></h1>
 	</header>
 
-	<?php if ( has_post_thumbnail() ) : ?>
-		<figure class="entry-media">
-			<?php the_post_thumbnail( 'large' ); ?>
-		</figure>
-	<?php endif; ?>
+	<div class="entry-layout entry-layout--notebook<?php echo has_post_thumbnail() ? ' entry-layout--with-media' : ''; ?>">
+		<div class="entry-content entry-content--notebook">
+			<?php if ( has_post_thumbnail() ) : ?>
+				<figure class="entry-media entry-media--notebook">
+					<?php the_post_thumbnail( 'large' ); ?>
+				</figure>
+			<?php endif; ?>
 
-	<div class="entry-content">
-		<?php the_content(); ?>
+			<?php the_content(); ?>
+		</div>
 	</div>
 </article>

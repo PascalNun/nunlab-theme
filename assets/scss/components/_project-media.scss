@@ -25,14 +25,13 @@
 	overflow: hidden;
 	border-radius: var(--nunlab-radius-md);
 	background: #d0d0d0;
-	aspect-ratio: 16 / 10;
 	touch-action: pan-y;
 }
 
 .project-gallery__slide {
 	position: relative;
 	inline-size: 100%;
-	block-size: 100%;
+	block-size: auto;
 	margin: 0;
 }
 
@@ -43,8 +42,8 @@
 .project-gallery__image {
 	display: block;
 	inline-size: 100%;
-	block-size: 100%;
-	object-fit: cover;
+	block-size: auto;
+	object-fit: contain;
 }
 
 :is(.project-gallery__video-frame, .project-card__video-frame) {

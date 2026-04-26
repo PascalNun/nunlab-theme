@@ -171,6 +171,8 @@ function nunlab_register_theme_meta() {
 
 	foreach (
 		array(
+			'nunlab_project_title_line_one' => 'string',
+			'nunlab_project_title_line_two' => 'string',
 			'nunlab_hero_title'   => 'string',
 			'nunlab_hero_intro'   => 'string',
 			'nunlab_work_eyebrow' => 'string',
@@ -198,6 +200,15 @@ add_action( 'init', 'nunlab_register_theme_meta' );
  */
 function nunlab_add_project_meta_boxes() {
 	add_meta_box(
+		'nunlab-project-presentation',
+		esc_html__( 'Project Presentation', 'nunlab-theme' ),
+		'nunlab_render_project_presentation_meta_box',
+		'project',
+		'side',
+		'default'
+	);
+
+	add_meta_box(
 		'nunlab-project-media',
 		esc_html__( 'Project Media', 'nunlab-theme' ),
 		'nunlab_render_project_media_meta_box',
@@ -207,6 +218,53 @@ function nunlab_add_project_meta_boxes() {
 	);
 }
 add_action( 'add_meta_boxes_project', 'nunlab_add_project_meta_boxes' );
+
+/**
+ * Render the project presentation meta box.
+ *
+ * @param WP_Post $post Current project.
+ */
+function nunlab_render_project_presentation_meta_box( $post ) {
+	$title_line_one = (string) get_post_meta( $post->ID, 'nunlab_project_title_line_one', true );
+	$title_line_two = (string) get_post_meta( $post->ID, 'nunlab_project_title_line_two', true );
+
+	wp_nonce_field( 'nunlab_save_project_presentation', 'nunlab_project_presentation_nonce' );
+	?>
+	<div class="nunlab-admin-fields">
+		<p class="nunlab-admin-fields__field">
+			<label class="nunlab-admin-fields__label" for="nunlab_project_title_line_one">
+				<?php esc_html_e( 'Expanded Title Line 1', 'nunlab-theme' ); ?>
+			</label>
+			<input
+				id="nunlab_project_title_line_one"
+				name="nunlab_project_title_line_one"
+				type="text"
+				class="widefat"
+				value="<?php echo esc_attr( $title_line_one ); ?>"
+			/>
+			<span class="description"><?php esc_html_e( 'Optional lighter first line for the opened project card headline.', 'nunlab-theme' ); ?></span>
+		</p>
+
+		<p class="nunlab-admin-fields__field">
+			<label class="nunlab-admin-fields__label" for="nunlab_project_title_line_two">
+				<?php esc_html_e( 'Expanded Title Line 2', 'nunlab-theme' ); ?>
+			</label>
+			<input
+				id="nunlab_project_title_line_two"
+				name="nunlab_project_title_line_two"
+				type="text"
+				class="widefat"
+				value="<?php echo esc_attr( $title_line_two ); ?>"
+			/>
+			<span class="description"><?php esc_html_e( 'Optional stronger second line for the opened project card headline.', 'nunlab-theme' ); ?></span>
+		</p>
+
+		<p class="description">
+			<?php esc_html_e( 'The project excerpt is used as the expanded subheadline below the title.', 'nunlab-theme' ); ?>
+		</p>
+	</div>
+	<?php
+}
 
 /**
  * Add the front-page content fields meta box.
@@ -291,12 +349,12 @@ function nunlab_render_front_page_meta_box( $post ) {
 			'description' => __( 'Short supporting paragraph below the hero title.', 'nunlab-theme' ),
 		),
 		'nunlab_work_eyebrow' => array(
-			'label'       => __( 'Work Eyebrow', 'nunlab-theme' ),
-			'description' => __( 'Small section label above the work heading.', 'nunlab-theme' ),
+			'label'       => __( 'Portfolio Section Label', 'nunlab-theme' ),
+			'description' => __( 'Small label above the project index. You can use Work, Portfolio, Selected Work, Projects, or a custom phrase.', 'nunlab-theme' ),
 		),
 		'nunlab_work_heading' => array(
-			'label'       => __( 'Work Heading', 'nunlab-theme' ),
-			'description' => __( 'Main heading above the expandable work index.', 'nunlab-theme' ),
+			'label'       => __( 'Portfolio Section Heading', 'nunlab-theme' ),
+			'description' => __( 'Main heading above the expandable project index on the front page.', 'nunlab-theme' ),
 		),
 	);
 	$about_page_id = (int) get_post_meta( $post->ID, 'nunlab_about_page_id', true );
@@ -339,7 +397,7 @@ function nunlab_render_front_page_meta_box( $post ) {
 					</option>
 				<?php endforeach; ?>
 			</select>
-			<span class="description"><?php esc_html_e( 'This page is rendered as the About section below Work on the front page.', 'nunlab-theme' ); ?></span>
+			<span class="description"><?php esc_html_e( 'This page is rendered as the About section below the portfolio/project section on the front page.', 'nunlab-theme' ); ?></span>
 		</p>
 
 		<p class="nunlab-admin-fields__field">
@@ -397,6 +455,42 @@ function nunlab_save_project_media_meta( $post_id ) {
 	update_post_meta( $post_id, 'nunlab_project_gallery_ids', $legacy_image_ids );
 }
 add_action( 'save_post_project', 'nunlab_save_project_media_meta' );
+
+/**
+ * Save project presentation meta.
+ *
+ * @param int $post_id Post ID.
+ */
+function nunlab_save_project_presentation_meta( $post_id ) {
+	if ( ! isset( $_POST['nunlab_project_presentation_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nunlab_project_presentation_nonce'] ) ), 'nunlab_save_project_presentation' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	foreach ( array( 'nunlab_project_title_line_one', 'nunlab_project_title_line_two' ) as $meta_key ) {
+		if ( ! isset( $_POST[ $meta_key ] ) ) {
+			delete_post_meta( $post_id, $meta_key );
+			continue;
+		}
+
+		$value = sanitize_text_field( wp_unslash( $_POST[ $meta_key ] ) );
+
+		if ( '' === trim( $value ) ) {
+			delete_post_meta( $post_id, $meta_key );
+			continue;
+		}
+
+		update_post_meta( $post_id, $meta_key, $value );
+	}
+}
+add_action( 'save_post_project', 'nunlab_save_project_presentation_meta' );
 
 /**
  * Save front-page content fields.
