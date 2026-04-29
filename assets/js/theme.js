@@ -176,6 +176,24 @@
 		window.requestAnimationFrame(step);
 	};
 
+	var scrollWindowTo = function (targetY, behavior) {
+		var top = Math.max(0, targetY);
+
+		if ('smooth' === behavior && window.requestAnimationFrame) {
+			animateScrollTo(top, 520);
+			return;
+		}
+
+		try {
+			window.scrollTo({
+				top: top,
+				behavior: behavior || 'auto',
+			});
+		} catch (error) {
+			window.scrollTo(0, top);
+		}
+	};
+
 	// Overlay search stays separate so it can close the mobile menu cleanly.
 	var initSearchOverlay = function () {
 		var body = document.body;
@@ -374,16 +392,16 @@
 		var sequenceCount = parseInt(stage ? stage.getAttribute('data-hero-sequence-count') || '0' : '0', 10);
 		var sequenceBaseJpg = stage ? stage.getAttribute('data-hero-sequence-base-jpg') || '' : '';
 		var sequenceBaseWebp = stage ? stage.getAttribute('data-hero-sequence-base-webp') || '' : '';
-		var sequenceExt = supportsWebP && sequenceBaseWebp ? 'webp' : 'jpg';
+		var sequenceExt = supportsWebP && sequenceBaseWebp && !isFirefox ? 'webp' : 'jpg';
 		var sequenceBase = 'webp' === sequenceExt ? sequenceBaseWebp : sequenceBaseJpg;
 		var sequenceDigits = parseInt(stage ? stage.getAttribute('data-hero-sequence-digits') || '3' : '3', 10);
 		var useSequenceFallback =
 			!!sequenceFrame &&
-			!prefersReducedMotion &&
 			sequenceCount > 0 &&
-			(isIOS || isFirefox);
+			(isIOS || isFirefox || prefersReducedMotion);
 		var useScrollScrub = !!video && !prefersReducedMotion && !useSequenceFallback;
 		var currentSequenceIndex = -1;
+		var hasSequenceFormatFallback = false;
 
 		if (!stage || !header) {
 			return;
@@ -394,12 +412,30 @@
 		};
 
 		var buildSequenceUrl = function (index) {
+			var frameNumber = String(index + 1);
+
+			while (frameNumber.length < sequenceDigits) {
+				frameNumber = '0' + frameNumber;
+			}
+
 			return (
 				sequenceBase +
-				String(index + 1).padStart(sequenceDigits, '0') +
+				frameNumber +
 				'.' +
 				sequenceExt
 			);
+		};
+
+		var fallBackToJpgSequence = function () {
+			if (hasSequenceFormatFallback || 'webp' !== sequenceExt || !sequenceBaseJpg) {
+				return;
+			}
+
+			hasSequenceFormatFallback = true;
+			sequenceExt = 'jpg';
+			sequenceBase = sequenceBaseJpg;
+			currentSequenceIndex = -1;
+			syncSequenceFrame(clamp((-stage.getBoundingClientRect().top / Math.max(stage.offsetHeight - window.innerHeight, 1)), 0, 1));
 		};
 
 		var preloadSequenceFrames = function () {
@@ -502,6 +538,7 @@
 
 			if (useSequenceFallback) {
 				if (sequenceFrame) {
+					sequenceFrame.addEventListener('error', fallBackToJpgSequence);
 					sequenceFrame.hidden = false;
 					sequenceFrame.src = buildSequenceUrl(0);
 				}
@@ -775,6 +812,10 @@
 
 			mutate();
 
+			if (!item.animate) {
+				return;
+			}
+
 			var last = item.getBoundingClientRect();
 			var deltaX = first.left - last.left;
 			var deltaY = first.top - last.top;
@@ -804,10 +845,7 @@
 			var headerOffset = header ? header.getBoundingClientRect().height : 0;
 			var top = item.getBoundingClientRect().top + window.scrollY - headerOffset - 24;
 
-			window.scrollTo({
-				top: Math.max(0, top),
-				behavior: 'smooth',
-			});
+			scrollWindowTo(top, 'smooth');
 		};
 
 		var scrollToClosedItem = function (item) {
@@ -815,10 +853,7 @@
 			var headerOffset = header ? header.getBoundingClientRect().height : 0;
 			var top = item.getBoundingClientRect().top + window.scrollY - headerOffset - 24;
 
-			window.scrollTo({
-				top: Math.max(0, top),
-				behavior: 'smooth',
-			});
+			scrollWindowTo(top, 'smooth');
 		};
 
 		groups.forEach(function (group) {
@@ -1295,12 +1330,22 @@
 	};
 
 	document.addEventListener('DOMContentLoaded', function () {
-		initSearchOverlay();
-		initMobileMenu();
-		initStickyHeader();
-		initHeroStage();
-		initSectionAwareNav();
-		initWorkListings();
-		initProjectGalleries();
+		[
+			initSearchOverlay,
+			initMobileMenu,
+			initStickyHeader,
+			initHeroStage,
+			initSectionAwareNav,
+			initWorkListings,
+			initProjectGalleries,
+		].forEach(function (init) {
+			try {
+				init();
+			} catch (error) {
+				if (window.console && window.console.error) {
+					window.console.error('NUN Lab theme init failed:', error);
+				}
+			}
+		});
 	});
 })();
