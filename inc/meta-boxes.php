@@ -130,6 +130,51 @@ function nunlab_get_project_media_editor_items( $post_id ) {
 }
 
 /**
+ * Return the editable fields for plugin/tool entries.
+ *
+ * @return array<string, array<string, string>>
+ */
+function nunlab_get_tool_detail_fields() {
+	return array(
+		'nunlab_tool_status'          => array(
+			'label'       => __( 'Status', 'nunlab-theme' ),
+			'description' => __( 'Short public status label, for example Alpha, Beta, or Stable.', 'nunlab-theme' ),
+			'type'        => 'text',
+		),
+		'nunlab_tool_version'         => array(
+			'label'       => __( 'Current Version', 'nunlab-theme' ),
+			'description' => __( 'Optional release/version label shown near the plugin title.', 'nunlab-theme' ),
+			'type'        => 'text',
+		),
+		'nunlab_tool_walkthrough_url' => array(
+			'label'       => __( 'YouTube Walkthrough URL', 'nunlab-theme' ),
+			'description' => __( 'A YouTube URL for the walkthrough video displayed near the top of the plugin page.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
+		'nunlab_tool_github_url'      => array(
+			'label'       => __( 'GitHub URL', 'nunlab-theme' ),
+			'description' => __( 'Repository or source-code link.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
+		'nunlab_tool_food4rhino_url'  => array(
+			'label'       => __( 'Food4Rhino URL', 'nunlab-theme' ),
+			'description' => __( 'Optional marketplace/listing link.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
+		'nunlab_tool_docs_url'        => array(
+			'label'       => __( 'Documentation URL', 'nunlab-theme' ),
+			'description' => __( 'Optional documentation or guide link.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
+		'nunlab_tool_release_url'     => array(
+			'label'       => __( 'Release / Download URL', 'nunlab-theme' ),
+			'description' => __( 'Optional latest release, installer, or download link.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
+	);
+}
+
+/**
  * Register meta keys used by the theme.
  */
 function nunlab_register_theme_meta() {
@@ -168,6 +213,19 @@ function nunlab_register_theme_meta() {
 			'show_in_rest'      => false,
 		)
 	);
+
+	foreach ( nunlab_get_tool_detail_fields() as $meta_key => $field ) {
+		register_post_meta(
+			'tool',
+			$meta_key,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'sanitize_callback' => 'url' === $field['type'] ? 'esc_url_raw' : 'sanitize_text_field',
+				'show_in_rest'      => true,
+			)
+		);
+	}
 
 	foreach (
 		array(
@@ -220,6 +278,21 @@ function nunlab_add_project_meta_boxes() {
 add_action( 'add_meta_boxes_project', 'nunlab_add_project_meta_boxes' );
 
 /**
+ * Add the plugin/tool detail meta box.
+ */
+function nunlab_add_tool_meta_boxes() {
+	add_meta_box(
+		'nunlab-tool-details',
+		esc_html__( 'Plugin Details', 'nunlab-theme' ),
+		'nunlab_render_tool_details_meta_box',
+		'tool',
+		'side',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes_tool', 'nunlab_add_tool_meta_boxes' );
+
+/**
  * Render the project presentation meta box.
  *
  * @param WP_Post $post Current project.
@@ -261,6 +334,39 @@ function nunlab_render_project_presentation_meta_box( $post ) {
 
 		<p class="description">
 			<?php esc_html_e( 'The project excerpt is used as the expanded subheadline below the title.', 'nunlab-theme' ); ?>
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * Render the plugin/tool detail meta box.
+ *
+ * @param WP_Post $post Current tool.
+ */
+function nunlab_render_tool_details_meta_box( $post ) {
+	wp_nonce_field( 'nunlab_save_tool_details', 'nunlab_tool_details_nonce' );
+	?>
+	<div class="nunlab-admin-fields">
+		<?php foreach ( nunlab_get_tool_detail_fields() as $meta_key => $field ) : ?>
+			<?php $value = (string) get_post_meta( $post->ID, $meta_key, true ); ?>
+			<p class="nunlab-admin-fields__field">
+				<label class="nunlab-admin-fields__label" for="<?php echo esc_attr( $meta_key ); ?>">
+					<?php echo esc_html( $field['label'] ); ?>
+				</label>
+				<input
+					id="<?php echo esc_attr( $meta_key ); ?>"
+					name="<?php echo esc_attr( $meta_key ); ?>"
+					type="<?php echo esc_attr( $field['type'] ); ?>"
+					class="widefat"
+					value="<?php echo esc_attr( $value ); ?>"
+				/>
+				<span class="description"><?php echo esc_html( $field['description'] ); ?></span>
+			</p>
+		<?php endforeach; ?>
+
+		<p class="description">
+			<?php esc_html_e( 'Use the main editor for chapter-style sections. Start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
 		</p>
 	</div>
 	<?php
@@ -491,6 +597,42 @@ function nunlab_save_project_presentation_meta( $post_id ) {
 	}
 }
 add_action( 'save_post_project', 'nunlab_save_project_presentation_meta' );
+
+/**
+ * Save plugin/tool detail meta.
+ *
+ * @param int $post_id Post ID.
+ */
+function nunlab_save_tool_details_meta( $post_id ) {
+	if ( ! isset( $_POST['nunlab_tool_details_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nunlab_tool_details_nonce'] ) ), 'nunlab_save_tool_details' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	foreach ( nunlab_get_tool_detail_fields() as $meta_key => $field ) {
+		if ( ! isset( $_POST[ $meta_key ] ) ) {
+			delete_post_meta( $post_id, $meta_key );
+			continue;
+		}
+
+		$value = 'url' === $field['type'] ? esc_url_raw( wp_unslash( $_POST[ $meta_key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $meta_key ] ) );
+
+		if ( '' === trim( $value ) ) {
+			delete_post_meta( $post_id, $meta_key );
+			continue;
+		}
+
+		update_post_meta( $post_id, $meta_key, $value );
+	}
+}
+add_action( 'save_post_tool', 'nunlab_save_tool_details_meta' );
 
 /**
  * Save front-page content fields.

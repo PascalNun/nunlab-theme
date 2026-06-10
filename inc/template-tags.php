@@ -383,6 +383,80 @@ function nunlab_get_youtube_poster_url( $video_id ) {
 }
 
 /**
+ * Return public external links for a plugin/tool entry.
+ *
+ * @param int $post_id Tool post ID.
+ * @return array<int, array{label:string, url:string}>
+ */
+function nunlab_get_tool_links( $post_id = 0 ) {
+	$post_id = $post_id ? (int) $post_id : get_the_ID();
+	$fields  = array(
+		'nunlab_tool_github_url'     => __( 'GitHub', 'nunlab-theme' ),
+		'nunlab_tool_food4rhino_url' => __( 'Food4Rhino', 'nunlab-theme' ),
+		'nunlab_tool_docs_url'       => __( 'Documentation', 'nunlab-theme' ),
+		'nunlab_tool_release_url'    => __( 'Latest Release', 'nunlab-theme' ),
+	);
+	$links   = array();
+
+	foreach ( $fields as $meta_key => $label ) {
+		$url = esc_url_raw( (string) get_post_meta( $post_id, $meta_key, true ) );
+
+		if ( '' === $url ) {
+			continue;
+		}
+
+		$links[] = array(
+			'label' => $label,
+			'url'   => $url,
+		);
+	}
+
+	return $links;
+}
+
+/**
+ * Render chapter-style content for plugin/tool pages.
+ *
+ * Heading blocks start chapters. Text, screenshots, and other blocks that
+ * follow the heading become that chapter's body.
+ *
+ * @param string $content Raw block content.
+ * @return string
+ */
+function nunlab_render_tool_chapters( $content ) {
+	$sections = nunlab_get_editorial_sections( $content );
+
+	if ( empty( $sections ) ) {
+		return '';
+	}
+
+	ob_start();
+	?>
+	<div class="tool-chapters">
+		<?php foreach ( $sections as $section ) : ?>
+			<section class="tool-chapter">
+				<?php if ( '' !== $section['heading'] ) : ?>
+					<div class="tool-chapter__heading">
+						<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $section['blocks'] ) ) : ?>
+					<div class="tool-chapter__body">
+						<?php foreach ( $section['blocks'] as $block_html ) : ?>
+							<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+			</section>
+		<?php endforeach; ?>
+	</div>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
  * Return stored raw project media items.
  *
  * Falls back to the legacy gallery fields until real media items are added.

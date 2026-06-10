@@ -13,7 +13,7 @@
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-:is(.content-grid--search, .content-grid--projects, .content-grid--notebook) {
+:is(.content-grid--search, .content-grid--projects, .content-grid--notebook, .content-grid--plugins) {
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -30,7 +30,8 @@
 	min-inline-size: 0;
 }
 
-.content-grid--notebook .content-card {
+.content-grid--notebook .content-card,
+.content-grid--plugins .content-card {
 	border-color: transparent;
 	box-shadow: var(--nunlab-shadow-soft);
 }
@@ -50,11 +51,41 @@
 	object-fit: cover;
 }
 
+.tool-card__placeholder {
+	display: grid;
+	align-items: end;
+	inline-size: 100%;
+	aspect-ratio: 4 / 3;
+	padding: $spacing-md;
+	background:
+		linear-gradient(135deg, rgba($color-white, 0.08), rgba($color-white, 0)),
+		linear-gradient(180deg, #272727 0%, #151515 100%);
+	color: rgba($color-white, 0.86);
+	font-family: $font-stack-display;
+	font-size: clamp(2.2rem, 5vw, 4rem);
+	font-weight: $font-weight-medium;
+	line-height: 0.9;
+	letter-spacing: 0;
+}
+
 .content-card__meta {
 	min-block-size: 1.5rem;
 	margin-bottom: $spacing-sm;
 	color: $color-secondary;
 	font-size: 0.875rem;
+}
+
+.tool-card__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 0.55rem;
+	align-items: center;
+}
+
+.tool-card__meta span:not(:last-child)::after {
+	content: '/';
+	margin-inline-start: 0.55rem;
+	color: rgba($color-secondary, 0.62);
 }
 
 :is(.content-card__title, .practice-card__title, .content-empty__title) {
@@ -81,13 +112,13 @@
 }
 
 @media (max-width: $bp-lg) {
-	:is(.content-grid--search, .content-grid--projects, .content-grid--notebook) {
+	:is(.content-grid--search, .content-grid--projects, .content-grid--notebook, .content-grid--plugins) {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
 @media (max-width: $bp-md) {
-	:is(.content-grid, .content-grid--search, .content-grid--projects, .content-grid--notebook, .practice-grid) {
+	:is(.content-grid, .content-grid--search, .content-grid--projects, .content-grid--notebook, .content-grid--plugins, .practice-grid) {
 		grid-template-columns: 1fr;
 	}
 }

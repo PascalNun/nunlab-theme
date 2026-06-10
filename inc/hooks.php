@@ -93,7 +93,7 @@ function nunlab_tune_search_queries( $query ) {
 		return;
 	}
 
-	$query->set( 'post_type', array( 'post', 'page', 'project' ) );
+	$query->set( 'post_type', array( 'post', 'page', 'project', 'tool' ) );
 }
 add_action( 'pre_get_posts', 'nunlab_tune_search_queries' );
 

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $post_type        = get_post_type();
 $post_type_object = $post_type ? get_post_type_object( $post_type ) : null;
-$link_label       = 'post' === $post_type ? __( 'Read entry', 'nunlab-theme' ) : ( 'project' === $post_type ? __( 'Open project', 'nunlab-theme' ) : __( 'Open item', 'nunlab-theme' ) );
+$link_label       = 'post' === $post_type ? __( 'Read entry', 'nunlab-theme' ) : ( 'project' === $post_type ? __( 'Open project', 'nunlab-theme' ) : ( 'tool' === $post_type ? __( 'Open plugin', 'nunlab-theme' ) : __( 'Open item', 'nunlab-theme' ) ) );
 $meta_label       = '';
 $image_markup     = '';
 
@@ -28,6 +28,11 @@ if ( 'post' === $post_type ) {
 			wp_list_pluck( $project_terms, 'name' )
 		);
 	}
+} elseif ( 'tool' === $post_type ) {
+	$tool_status  = trim( (string) get_post_meta( get_the_ID(), 'nunlab_tool_status', true ) );
+	$tool_version = trim( (string) get_post_meta( get_the_ID(), 'nunlab_tool_version', true ) );
+	$meta_parts   = array_filter( array( __( 'Plugin', 'nunlab-theme' ), $tool_status, $tool_version ) );
+	$meta_label   = implode( ' / ', $meta_parts );
 } elseif ( $post_type_object ) {
 	$meta_label = $post_type_object->labels->singular_name;
 }

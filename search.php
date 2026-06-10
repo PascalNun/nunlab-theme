@@ -33,8 +33,8 @@ get_header();
 					/* translators: %s: result count. */
 					esc_html(
 						_n(
-							'%s result across work, notebook, and pages.',
-							'%s results across work, notebook, and pages.',
+							'%s result across work, notebook, plugins, and pages.',
+							'%s results across work, notebook, plugins, and pages.',
 							(int) $wp_query->found_posts,
 							'nunlab-theme'
 						)

@@ -53,7 +53,7 @@ function nunlab_enqueue_admin_assets( $hook_suffix ) {
 	$style_path    = NUNLAB_THEME_DIR . '/assets/css/admin-editor.css';
 	$style_version = file_exists( $style_path ) ? (string) filemtime( $style_path ) : NUNLAB_THEME_VERSION;
 
-	if ( in_array( $screen->post_type, array( 'project', 'page' ), true ) ) {
+	if ( in_array( $screen->post_type, array( 'project', 'page', 'tool' ), true ) ) {
 		wp_enqueue_style(
 			'nunlab-admin-editor-style',
 			NUNLAB_THEME_URI . '/assets/css/admin-editor.css',
