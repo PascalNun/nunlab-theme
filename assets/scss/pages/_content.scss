@@ -222,6 +222,44 @@
 	margin-bottom: 0;
 }
 
+.entry--legal :is(.entry-header, .entry-content) {
+	max-width: 42rem;
+}
+
+.entry--legal .entry-header {
+	margin-bottom: clamp(1.25rem, 2.6vw, 1.8rem);
+}
+
+.entry--legal .entry-title {
+	font-size: clamp(2.4rem, 6vw, 4rem);
+}
+
+.entry--legal .entry-content {
+	color: $color-secondary;
+	font-size: 1rem;
+	line-height: 1.65;
+}
+
+.entry--legal .entry-content > * + * {
+	margin-top: clamp(1.45rem, 2.8vw, 2.1rem);
+}
+
+.entry--legal .entry-content > * + .wp-block-paragraph {
+	margin-top: clamp(0.4rem, 0.8vw, 0.6rem);
+}
+
+.entry--legal .entry-content :is(h2, h3) {
+	color: $color-primary;
+	font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+	line-height: 1.12;
+	letter-spacing: 0;
+}
+
+.entry--legal .entry-content a {
+	color: $color-primary;
+	text-underline-offset: 0.16em;
+}
+
 .posts-navigation {
 	margin-top: $spacing-xl;
 }

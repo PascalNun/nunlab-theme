@@ -72,7 +72,7 @@ NUNLab/
   - `Manifesto`
   - `Plugins`
   - `Contact`
-  - `Imprint`
+  - `Legal Notice`
 - `post`:
   - used for `Notebook`
 - `project`:

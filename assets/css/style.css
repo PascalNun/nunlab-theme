@@ -166,7 +166,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 
 .site-main {
   display: block;
-  padding: 3rem 1rem 4rem;
+  padding: clamp(1.5rem, 3vw, 2rem) 1rem 4rem;
 }
 
 .site-main--front-page {
@@ -179,7 +179,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 }
 
 :is(.archive-shell, .content-shell) {
-  padding-top: 3rem;
+  padding-top: clamp(1.5rem, 3vw, 2rem);
 }
 
 :is(.content-shell, .content-shell--project) {
@@ -195,7 +195,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
     --nunlab-header-offset: calc(5.9rem + var(--nunlab-safe-top));
   }
   .site-main {
-    padding-top: 2rem;
+    padding-top: 1rem;
   }
   .site-main--front-page {
     padding-top: 0;
@@ -261,7 +261,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 
 .site-brand__asset-link {
   display: block;
-  inline-size: min(9.8rem, 28vw);
+  inline-size: min(5.4rem, 28vw);
 }
 
 .site-brand__asset-stack {
@@ -533,7 +533,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
     padding-top: calc(var(--nunlab-safe-top) + 0.85rem);
   }
   .site-brand__asset-link {
-    inline-size: min(9rem, 44vw);
+    inline-size: min(5rem, 34vw);
   }
 }
 /**
@@ -1257,6 +1257,44 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 
 .entry-content p {
   margin-bottom: 0;
+}
+
+.entry--legal :is(.entry-header, .entry-content) {
+  max-width: 42rem;
+}
+
+.entry--legal .entry-header {
+  margin-bottom: clamp(1.25rem, 2.6vw, 1.8rem);
+}
+
+.entry--legal .entry-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+}
+
+.entry--legal .entry-content {
+  color: #5f5b57;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.entry--legal .entry-content > * + * {
+  margin-top: clamp(1.45rem, 2.8vw, 2.1rem);
+}
+
+.entry--legal .entry-content > * + .wp-block-paragraph {
+  margin-top: clamp(0.4rem, 0.8vw, 0.6rem);
+}
+
+.entry--legal .entry-content :is(h2, h3) {
+  color: #161616;
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.entry--legal .entry-content a {
+  color: #161616;
+  text-underline-offset: 0.16em;
 }
 
 .posts-navigation {

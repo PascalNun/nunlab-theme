@@ -299,7 +299,7 @@ function nunlab_get_theme_asset_uri( $relative_path ) {
 		return '';
 	}
 
-	return NUNLAB_THEME_URI . '/' . $relative_path;
+	return add_query_arg( 'ver', (string) filemtime( $asset_path ), NUNLAB_THEME_URI . '/' . $relative_path );
 }
 
 /**

@@ -8,8 +8,13 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+	$entry_classes = array( 'entry', 'entry--page' );
+
+	if ( is_page( 'legal-notice' ) ) {
+		$entry_classes[] = 'entry--legal';
+	}
 ?>
-<article id="post-<?php the_ID(); ?>" <?php post_class( 'entry entry--page' ); ?>>
+<article id="post-<?php the_ID(); ?>" <?php post_class( $entry_classes ); ?>>
 	<header class="entry-header">
 		<h1 class="entry-title"><?php the_title(); ?></h1>
 	</header>

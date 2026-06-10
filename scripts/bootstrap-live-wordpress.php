@@ -20,6 +20,7 @@ if ( ! $theme->exists() ) {
 }
 
 switch_theme( $theme_stylesheet );
+update_option( 'blogname', 'N:UN' );
 
 /**
  * Ensure a published page exists for the requested slug.
@@ -105,7 +106,7 @@ $page_ids = array(
 	'notebook'  => nunlab_ensure_page( 'Notebook', 'notebook' ),
 	'plugins'   => nunlab_ensure_page( 'Plugins', 'plugins' ),
 	'contact'   => nunlab_ensure_page( 'Contact', 'contact' ),
-	'imprint'   => nunlab_ensure_page( 'Imprint', 'imprint' ),
+	'legal'     => nunlab_ensure_page( 'Legal Notice', 'legal-notice' ),
 );
 
 nunlab_trash_default_content();
@@ -169,8 +170,8 @@ set_theme_mod( 'nav_menu_locations', $locations );
 nunlab_ensure_menu_item(
 	$legal_id,
 	array(
-		'menu-item-title'     => 'Imprint',
-		'menu-item-object-id' => $page_ids['imprint'],
+		'menu-item-title'     => 'Legal Notice',
+		'menu-item-object-id' => $page_ids['legal'],
 		'menu-item-object'    => 'page',
 		'menu-item-type'      => 'post_type',
 		'menu-item-status'    => 'publish',

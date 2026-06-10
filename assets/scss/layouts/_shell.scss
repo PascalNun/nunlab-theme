@@ -33,7 +33,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 
 .site-main {
 	display: block;
-	padding: $spacing-xl $spacing-md $spacing-xxl;
+	padding: clamp(1.5rem, 3vw, 2rem) $spacing-md $spacing-xxl;
 }
 
 .site-main--front-page {
@@ -46,7 +46,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 }
 
 :is(.archive-shell, .content-shell) {
-	padding-top: $spacing-xl;
+	padding-top: clamp(1.5rem, 3vw, 2rem);
 }
 
 :is(.content-shell, .content-shell--project) {
@@ -63,7 +63,7 @@ body:is(.has-search-overlay, .has-mobile-menu) {
 	}
 
 	.site-main {
-		padding-top: $spacing-lg;
+		padding-top: $spacing-md;
 	}
 
 	.site-main--front-page {

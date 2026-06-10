@@ -22,7 +22,7 @@ get_header();
 				?>
 			</h1>
 			<p class="archive-description">
-				<?php esc_html_e( 'Notes, essays, fragments, and working thoughts from N:UN Lab.', 'nunlab-theme' ); ?>
+				<?php esc_html_e( 'Notes, essays, fragments, and working thoughts from N:UN.', 'nunlab-theme' ); ?>
 			</p>
 		</header>
 
