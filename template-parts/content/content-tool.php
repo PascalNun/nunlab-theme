@@ -9,11 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$tool_status       = trim( (string) get_post_meta( get_the_ID(), 'nunlab_tool_status', true ) );
-$tool_version      = trim( (string) get_post_meta( get_the_ID(), 'nunlab_tool_version', true ) );
 $walkthrough_url   = esc_url_raw( (string) get_post_meta( get_the_ID(), 'nunlab_tool_walkthrough_url', true ) );
 $walkthrough_id    = nunlab_get_youtube_video_id( $walkthrough_url );
 $walkthrough_embed = $walkthrough_id ? nunlab_get_youtube_embed_url( $walkthrough_id, false ) : '';
+$tool_meta_parts   = nunlab_get_tool_meta_parts( get_the_ID(), false );
 $tool_links        = nunlab_get_tool_links( get_the_ID() );
 $chapter_content   = nunlab_render_tool_chapters( get_the_content( null, false ) );
 ?>
@@ -26,14 +25,11 @@ $chapter_content   = nunlab_render_tool_chapters( get_the_content( null, false )
 			<p class="entry-lead"><?php echo esc_html( get_the_excerpt() ); ?></p>
 		<?php endif; ?>
 
-		<?php if ( '' !== $tool_status || '' !== $tool_version ) : ?>
+		<?php if ( $tool_meta_parts ) : ?>
 			<ul class="tool-meta" aria-label="<?php esc_attr_e( 'Plugin details', 'nunlab-theme' ); ?>">
-				<?php if ( '' !== $tool_status ) : ?>
-					<li><?php echo esc_html( $tool_status ); ?></li>
-				<?php endif; ?>
-				<?php if ( '' !== $tool_version ) : ?>
-					<li><?php echo esc_html( $tool_version ); ?></li>
-				<?php endif; ?>
+				<?php foreach ( $tool_meta_parts as $tool_meta_part ) : ?>
+					<li><?php echo esc_html( $tool_meta_part ); ?></li>
+				<?php endforeach; ?>
 			</ul>
 		<?php endif; ?>
 

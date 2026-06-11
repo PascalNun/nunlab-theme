@@ -98,6 +98,15 @@ function nunlab_tune_search_queries( $query ) {
 add_action( 'pre_get_posts', 'nunlab_tune_search_queries' );
 
 /**
+ * Use native emoji rendering and skip WordPress' visitor-side emoji helper.
+ */
+function nunlab_disable_front_end_emoji_assets() {
+	remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+	remove_action( 'wp_print_styles', 'print_emoji_styles' );
+}
+add_action( 'init', 'nunlab_disable_front_end_emoji_assets' );
+
+/**
  * Raise WordPress' "big image" threshold so uploads are not scaled down as
  * aggressively at 2560px.
  *

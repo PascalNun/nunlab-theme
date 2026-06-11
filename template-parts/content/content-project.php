@@ -9,11 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$media_items   = nunlab_get_project_media_items( get_the_ID(), 'nunlab-project-large' );
-$project_terms = get_the_terms( get_the_ID(), 'project_type' );
-$eyebrow       = __( 'Project', 'nunlab-theme' );
-$title_line_one = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_one', true ) );
-$title_line_two = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_two', true ) );
+$media_items    = nunlab_get_project_media_items( get_the_ID(), 'nunlab-project-large' );
+$project_terms  = get_the_terms( get_the_ID(), 'project_type' );
+$eyebrow        = __( 'Project', 'nunlab-theme' );
+$title_parts    = nunlab_get_project_presentation_title_parts( get_the_ID() );
 $detail_content = nunlab_render_project_editorial_content( get_the_content( null, false ) );
 
 if ( $project_terms && ! is_wp_error( $project_terms ) ) {
@@ -24,16 +23,7 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 	<header class="entry-header">
 		<p class="archive-eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
 		<h1 class="entry-title entry-title--project-presentation">
-			<?php if ( '' !== $title_line_one && '' !== $title_line_two ) : ?>
-				<span class="entry-title__line entry-title__line--primary"><?php echo esc_html( $title_line_one ); ?></span>
-				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-			<?php elseif ( '' !== $title_line_one ) : ?>
-				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_one ); ?></span>
-			<?php elseif ( '' !== $title_line_two ) : ?>
-				<span class="entry-title__line entry-title__line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-			<?php else : ?>
-				<span class="entry-title__line entry-title__line--emphasis"><?php the_title(); ?></span>
-			<?php endif; ?>
+			<?php echo nunlab_get_project_presentation_title_markup( $title_parts, 'entry-title__line' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</h1>
 		<?php if ( has_excerpt() ) : ?>
 			<p class="entry-lead"><?php echo esc_html( get_the_excerpt() ); ?></p>

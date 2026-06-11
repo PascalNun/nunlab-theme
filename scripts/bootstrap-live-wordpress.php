@@ -99,6 +99,83 @@ function nunlab_ensure_menu_item( int $menu_id, array $item_args ): void {
 	wp_update_nav_menu_item( $menu_id, 0, $item_args );
 }
 
+/**
+ * Determine whether a menu item represents the front-page Work section.
+ *
+ * @param WP_Post $item Menu item.
+ */
+function nunlab_is_work_menu_item( WP_Post $item ): bool {
+	$title       = strtolower( trim( wp_strip_all_tags( (string) $item->title ) ) );
+	$item_url    = untrailingslashit( (string) $item->url );
+	$anchor_url  = untrailingslashit( home_url( '/#work' ) );
+	$archive_url = get_post_type_archive_link( 'project' );
+	$archive_url = $archive_url ? untrailingslashit( $archive_url ) : '';
+
+	return 'work' === $title || $anchor_url === $item_url || ( '' !== $archive_url && $archive_url === $item_url );
+}
+
+/**
+ * Ensure Work appears only once in the primary menu.
+ *
+ * User-edited Work menu items are preserved; the custom anchor is only added
+ * when no existing Work item is present.
+ *
+ * @param int $menu_id Menu ID.
+ */
+function nunlab_ensure_work_menu_item( int $menu_id ): void {
+	$existing_items = wp_get_nav_menu_items( $menu_id );
+
+	if ( is_array( $existing_items ) ) {
+		foreach ( $existing_items as $existing_item ) {
+			if ( $existing_item instanceof WP_Post && nunlab_is_work_menu_item( $existing_item ) ) {
+				return;
+			}
+		}
+	}
+
+	nunlab_ensure_menu_item(
+		$menu_id,
+		array(
+			'menu-item-title'  => 'Work',
+			'menu-item-url'    => home_url( '/#work' ),
+			'menu-item-type'   => 'custom',
+			'menu-item-status' => 'publish',
+		)
+	);
+}
+
+/**
+ * Remove duplicate Work items left by earlier bootstrap runs.
+ *
+ * @param int $menu_id Menu ID.
+ */
+function nunlab_prune_duplicate_work_menu_items( int $menu_id ): void {
+	$existing_items = wp_get_nav_menu_items(
+		$menu_id,
+		array(
+			'orderby' => 'menu_order',
+		)
+	);
+	$has_work       = false;
+
+	if ( ! is_array( $existing_items ) ) {
+		return;
+	}
+
+	foreach ( $existing_items as $existing_item ) {
+		if ( ! $existing_item instanceof WP_Post || ! nunlab_is_work_menu_item( $existing_item ) ) {
+			continue;
+		}
+
+		if ( ! $has_work ) {
+			$has_work = true;
+			continue;
+		}
+
+		wp_delete_post( $existing_item->ID, true );
+	}
+}
+
 $page_ids = array(
 	'home'      => nunlab_ensure_page( 'Home', 'home' ),
 	'about'     => nunlab_ensure_page( 'About', 'about' ),
@@ -139,15 +216,7 @@ nunlab_ensure_menu_item(
 	)
 );
 
-nunlab_ensure_menu_item(
-	$menu_id,
-	array(
-		'menu-item-title'  => 'Work',
-		'menu-item-url'    => home_url( '/#work' ),
-		'menu-item-type'   => 'custom',
-		'menu-item-status' => 'publish',
-	)
-);
+nunlab_ensure_work_menu_item( $menu_id );
 
 foreach ( array( 'about', 'notebook', 'plugins', 'contact' ) as $slug ) {
 	nunlab_ensure_menu_item(
@@ -161,6 +230,8 @@ foreach ( array( 'about', 'notebook', 'plugins', 'contact' ) as $slug ) {
 		)
 	);
 }
+
+nunlab_prune_duplicate_work_menu_items( $menu_id );
 
 $locations            = get_theme_mod( 'nav_menu_locations', array() );
 $locations['primary'] = $menu_id;

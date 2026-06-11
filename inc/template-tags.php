@@ -40,6 +40,77 @@ function nunlab_posted_on() {
 }
 
 /**
+ * Return the optional two-line project title used by project presentation views.
+ *
+ * @param int $post_id Project post ID.
+ * @return array{line_one:string,line_two:string,fallback:string,text:string}
+ */
+function nunlab_get_project_presentation_title_parts( $post_id = 0 ) {
+	$post_id   = $post_id ? (int) $post_id : get_the_ID();
+	$line_one  = trim( (string) get_post_meta( $post_id, 'nunlab_project_title_line_one', true ) );
+	$line_two  = trim( (string) get_post_meta( $post_id, 'nunlab_project_title_line_two', true ) );
+	$fallback  = get_the_title( $post_id );
+	$plain     = trim( $line_one . ' ' . $line_two );
+
+	return array(
+		'line_one' => $line_one,
+		'line_two' => $line_two,
+		'fallback' => $fallback,
+		'text'     => '' !== $plain ? $plain : $fallback,
+	);
+}
+
+/**
+ * Return escaped title-line markup for a project presentation title.
+ *
+ * @param array  $title_parts Title parts from nunlab_get_project_presentation_title_parts().
+ * @param string $base_class  Base class for the generated line spans.
+ * @return string
+ */
+function nunlab_get_project_presentation_title_markup( $title_parts, $base_class ) {
+	$line_one = isset( $title_parts['line_one'] ) ? (string) $title_parts['line_one'] : '';
+	$line_two = isset( $title_parts['line_two'] ) ? (string) $title_parts['line_two'] : '';
+	$fallback = isset( $title_parts['fallback'] ) ? (string) $title_parts['fallback'] : '';
+
+	if ( '' !== $line_one && '' !== $line_two ) {
+		return sprintf(
+			'<span class="%1$s">%2$s</span><span class="%3$s">%4$s</span>',
+			esc_attr( $base_class . ' ' . $base_class . '--primary' ),
+			esc_html( $line_one ),
+			esc_attr( $base_class . ' ' . $base_class . '--emphasis' ),
+			esc_html( $line_two )
+		);
+	}
+
+	return sprintf(
+		'<span class="%1$s">%2$s</span>',
+		esc_attr( $base_class . ' ' . $base_class . '--emphasis' ),
+		esc_html( '' !== $line_one ? $line_one : ( '' !== $line_two ? $line_two : $fallback ) )
+	);
+}
+
+/**
+ * Return compact public metadata for plugin/tool cards and pages.
+ *
+ * @param int  $post_id      Tool post ID.
+ * @param bool $include_type Whether to include the "Plugin" type label.
+ * @return string[]
+ */
+function nunlab_get_tool_meta_parts( $post_id = 0, $include_type = true ) {
+	$post_id = $post_id ? (int) $post_id : get_the_ID();
+	$parts   = array();
+
+	if ( $include_type ) {
+		$parts[] = __( 'Plugin', 'nunlab-theme' );
+	}
+
+	$parts[] = trim( (string) get_post_meta( $post_id, 'nunlab_tool_status', true ) );
+	$parts[] = trim( (string) get_post_meta( $post_id, 'nunlab_tool_version', true ) );
+
+	return array_values( array_filter( $parts ) );
+}
+
+/**
  * Return project archive sections in the preferred display order.
  *
  * @param array $args Section query options.

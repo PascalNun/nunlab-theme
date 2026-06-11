@@ -13,10 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enqueue theme stylesheets and scripts.
  */
 function nunlab_enqueue_assets() {
-	$style_path    = NUNLAB_THEME_DIR . '/assets/css/style.css';
-	$script_path   = NUNLAB_THEME_DIR . '/assets/js/theme.js';
-	$style_version = file_exists( $style_path ) ? (string) filemtime( $style_path ) : NUNLAB_THEME_VERSION;
-	$script_version = file_exists( $script_path ) ? (string) filemtime( $script_path ) : NUNLAB_THEME_VERSION;
+	$style_path          = NUNLAB_THEME_DIR . '/assets/css/style.css';
+	$script_path         = NUNLAB_THEME_DIR . '/assets/js/theme.js';
+	$style_version       = file_exists( $style_path ) ? (string) filemtime( $style_path ) : NUNLAB_THEME_VERSION;
+	$script_version      = file_exists( $script_path ) ? (string) filemtime( $script_path ) : NUNLAB_THEME_VERSION;
+	$front_script_path   = NUNLAB_THEME_DIR . '/assets/js/front-page.js';
+	$project_script_path = NUNLAB_THEME_DIR . '/assets/js/project-gallery.js';
 
 	// Main theme stylesheet.
 	wp_enqueue_style(
@@ -27,14 +29,34 @@ function nunlab_enqueue_assets() {
 		'all'
 	);
 
-	// Main theme script.
+	// Core interactions shared by every visitor-facing page.
 	wp_enqueue_script(
 		'nunlab-theme-script',
 		NUNLAB_THEME_URI . '/assets/js/theme.js',
 		array(),
 		$script_version,
-		true // Load in footer.
+		true
 	);
+
+	if ( is_front_page() && file_exists( $front_script_path ) ) {
+		wp_enqueue_script(
+			'nunlab-front-page-script',
+			NUNLAB_THEME_URI . '/assets/js/front-page.js',
+			array( 'nunlab-theme-script' ),
+			(string) filemtime( $front_script_path ),
+			true
+		);
+	}
+
+	if ( is_singular( 'project' ) && file_exists( $project_script_path ) ) {
+		wp_enqueue_script(
+			'nunlab-project-gallery-script',
+			NUNLAB_THEME_URI . '/assets/js/project-gallery.js',
+			array( 'nunlab-theme-script' ),
+			(string) filemtime( $project_script_path ),
+			true
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'nunlab_enqueue_assets' );
 

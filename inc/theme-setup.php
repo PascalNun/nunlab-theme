@@ -13,16 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Set up theme defaults and register support for various WordPress features.
  */
 function nunlab_setup() {
-	// Enable theme support for title tag.
 	add_theme_support( 'title-tag' );
-
-	// Enable theme support for post thumbnails.
 	add_theme_support( 'post-thumbnails' );
 
 	// Larger generated size for project galleries and expanded project cards.
 	add_image_size( 'nunlab-project-large', 2400, 0, false );
 
-	// Enable theme support for a custom logo.
 	add_theme_support(
 		'custom-logo',
 		array(
@@ -33,7 +29,6 @@ function nunlab_setup() {
 		)
 	);
 
-	// Enable HTML5 support for various features.
 	add_theme_support(
 		'html5',
 		array(
@@ -47,7 +42,6 @@ function nunlab_setup() {
 		)
 	);
 
-	// Register navigation menus.
 	register_nav_menus(
 		array(
 			'primary' => esc_html__( 'Primary Menu', 'nunlab-theme' ),
@@ -55,7 +49,6 @@ function nunlab_setup() {
 		)
 	);
 
-	// Load text domain for translations.
 	load_theme_textdomain( 'nunlab-theme', NUNLAB_THEME_DIR . '/languages' );
 }
 add_action( 'after_setup_theme', 'nunlab_setup' );

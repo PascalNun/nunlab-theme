@@ -9,26 +9,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$project_excerpt = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( get_the_excerpt() ) ) );
-$summary         = $project_excerpt ? wp_trim_words( $project_excerpt, 28 ) : __( 'Open the case study to see the full project narrative.', 'nunlab-theme' );
-$detail_content  = nunlab_render_project_editorial_content( get_the_content( null, false ) );
-$title_line_one  = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_one', true ) );
-$title_line_two  = trim( (string) get_post_meta( get_the_ID(), 'nunlab_project_title_line_two', true ) );
-$presentation_title = trim( $title_line_one . ' ' . $title_line_two );
-$subtitle        = $project_excerpt;
-
-if ( '' === $presentation_title ) {
-	$presentation_title = get_the_title();
-}
+$project_excerpt    = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( get_the_excerpt() ) ) );
+$summary            = $project_excerpt ? wp_trim_words( $project_excerpt, 28 ) : __( 'Open the case study to see the full project narrative.', 'nunlab-theme' );
+$detail_content     = nunlab_render_project_editorial_content( get_the_content( null, false ) );
+$title_parts        = nunlab_get_project_presentation_title_parts( get_the_ID() );
+$presentation_title = $title_parts['text'];
+$subtitle           = $project_excerpt;
 
 if ( '' === $detail_content ) {
 	$detail_content = '<div class="project-card__expand-fallback"><p>' . esc_html( $summary ) . '</p></div>';
 }
-$media_items     = nunlab_get_project_media_items( get_the_ID(), 'nunlab-project-large' );
-$primary_image   = nunlab_get_project_primary_image( get_the_ID(), 'nunlab-project-large' );
-$image_url       = isset( $primary_image['url'] ) ? (string) $primary_image['url'] : '';
-$image_alt       = isset( $primary_image['alt'] ) ? (string) $primary_image['alt'] : '';
-$media_payload   = array_map(
+$media_items        = nunlab_get_project_media_items( get_the_ID(), 'nunlab-project-large' );
+$primary_image      = nunlab_get_project_primary_image( get_the_ID(), 'nunlab-project-large' );
+$image_url          = isset( $primary_image['url'] ) ? (string) $primary_image['url'] : '';
+$image_alt          = isset( $primary_image['alt'] ) ? (string) $primary_image['alt'] : '';
+$media_payload      = array_map(
 	function ( $item ) {
 		return array(
 			'type'             => (string) $item['type'],
@@ -77,16 +72,7 @@ $media_payload   = array_map(
 
 				<div class="project-card__body">
 					<h4 class="project-card__title">
-						<?php if ( '' !== $title_line_one && '' !== $title_line_two ) : ?>
-							<span class="project-card__title-line project-card__title-line--primary"><?php echo esc_html( $title_line_one ); ?></span>
-							<span class="project-card__title-line project-card__title-line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-						<?php elseif ( '' !== $title_line_one ) : ?>
-							<span class="project-card__title-line project-card__title-line--emphasis"><?php echo esc_html( $title_line_one ); ?></span>
-						<?php elseif ( '' !== $title_line_two ) : ?>
-							<span class="project-card__title-line project-card__title-line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-						<?php else : ?>
-							<span class="project-card__title-line project-card__title-line--emphasis"><?php the_title(); ?></span>
-						<?php endif; ?>
+						<?php echo nunlab_get_project_presentation_title_markup( $title_parts, 'project-card__title-line' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</h4>
 
 					<?php if ( $summary ) : ?>
@@ -112,16 +98,7 @@ $media_payload   = array_map(
 	<section class="project-card__expand" hidden data-work-expand>
 		<div class="project-card__expand-body">
 			<h4 class="project-card__expand-title">
-				<?php if ( '' !== $title_line_one && '' !== $title_line_two ) : ?>
-					<span class="project-card__expand-title-line project-card__expand-title-line--primary"><?php echo esc_html( $title_line_one ); ?></span>
-					<span class="project-card__expand-title-line project-card__expand-title-line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-				<?php elseif ( '' !== $title_line_one ) : ?>
-					<span class="project-card__expand-title-line project-card__expand-title-line--emphasis"><?php echo esc_html( $title_line_one ); ?></span>
-				<?php elseif ( '' !== $title_line_two ) : ?>
-					<span class="project-card__expand-title-line project-card__expand-title-line--emphasis"><?php echo esc_html( $title_line_two ); ?></span>
-				<?php else : ?>
-					<span class="project-card__expand-title-line project-card__expand-title-line--emphasis"><?php the_title(); ?></span>
-				<?php endif; ?>
+				<?php echo nunlab_get_project_presentation_title_markup( $title_parts, 'project-card__expand-title-line' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</h4>
 
 			<?php if ( $subtitle ) : ?>

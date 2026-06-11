@@ -15,6 +15,7 @@ $tool_query = new WP_Query(
 	array(
 		'post_type'      => 'tool',
 		'posts_per_page' => -1,
+		'no_found_rows'  => true,
 		'orderby'        => array(
 			'menu_order' => 'ASC',
 			'date'       => 'DESC',
@@ -57,7 +58,7 @@ get_header();
 				<?php
 				while ( $tool_query->have_posts() ) :
 					$tool_query->the_post();
-					get_template_part( 'template-parts/content/content', 'tool-card' );
+					get_template_part( 'template-parts/content/content', 'excerpt' );
 				endwhile;
 				?>
 			</div>
