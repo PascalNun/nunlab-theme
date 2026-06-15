@@ -486,35 +486,134 @@ function nunlab_get_tool_links( $post_id = 0 ) {
 }
 
 /**
- * Render chapter-style content for plugin/tool pages.
+ * Return overview blocks and chapter sections for plugin/tool pages.
  *
- * Heading blocks start chapters. Text, screenshots, and other blocks that
- * follow the heading become that chapter's body.
+ * Authoring contract: blocks before the first Heading become the overview
+ * intro; each Heading after that starts a jumpable chapter.
  *
  * @param string $content Raw block content.
- * @return string
+ * @return array{overview_blocks:array<int, string>, chapters:array<int, array{id:string,title:string,nav_label:string,heading:string,blocks:array<int, string>}>}
  */
-function nunlab_render_tool_chapters( $content ) {
+function nunlab_get_tool_content_sections( $content ) {
 	$sections = nunlab_get_editorial_sections( $content );
+	$result   = array(
+		'overview_blocks' => array(),
+		'chapters'        => array(),
+	);
 
 	if ( empty( $sections ) ) {
+		return $result;
+	}
+
+	$used_ids = array();
+
+	foreach ( $sections as $section ) {
+		$heading = isset( $section['heading'] ) ? (string) $section['heading'] : '';
+		$blocks  = isset( $section['blocks'] ) && is_array( $section['blocks'] ) ? $section['blocks'] : array();
+
+		if ( '' === trim( $heading ) ) {
+			$result['overview_blocks'] = array_merge( $result['overview_blocks'], $blocks );
+			continue;
+		}
+
+		$title     = trim( wp_strip_all_tags( $heading ) );
+		$nav_label = trim( (string) preg_replace( '/^\d+[\).\s-]+/', '', $title ) );
+		$nav_label = '' !== $nav_label ? $nav_label : $title;
+		$base_id   = sanitize_title( '' !== $nav_label ? $nav_label : (string) ( count( $result['chapters'] ) + 1 ) );
+		$base_id   = 'chapter-' . ( '' !== $base_id ? $base_id : ( count( $result['chapters'] ) + 1 ) );
+		$id        = $base_id;
+		$suffix    = 2;
+
+		while ( in_array( $id, $used_ids, true ) ) {
+			$id = $base_id . '-' . $suffix;
+			++$suffix;
+		}
+
+		$used_ids[] = $id;
+
+		$result['chapters'][] = array(
+			'id'        => $id,
+			'title'     => $title,
+			'nav_label' => $nav_label,
+			'heading'   => $heading,
+			'blocks'    => $blocks,
+		);
+	}
+
+	return $result;
+}
+
+/**
+ * Render the generated overview card for a plugin/tool page.
+ *
+ * @param array $tool_sections Sections from nunlab_get_tool_content_sections().
+ * @return string
+ */
+function nunlab_render_tool_overview( $tool_sections ) {
+	$overview_blocks = isset( $tool_sections['overview_blocks'] ) && is_array( $tool_sections['overview_blocks'] ) ? $tool_sections['overview_blocks'] : array();
+	$chapters        = isset( $tool_sections['chapters'] ) && is_array( $tool_sections['chapters'] ) ? $tool_sections['chapters'] : array();
+
+	if ( empty( $overview_blocks ) && empty( $chapters ) ) {
+		return '';
+	}
+
+	ob_start();
+	?>
+	<section class="tool-overview" aria-labelledby="tool-overview-title">
+		<div class="tool-overview__index">
+			<h2 id="tool-overview-title" class="tool-overview__title"><?php esc_html_e( 'Overview', 'nunlab-theme' ); ?></h2>
+
+			<?php if ( $chapters ) : ?>
+				<ol class="tool-overview__list">
+					<?php foreach ( $chapters as $chapter ) : ?>
+						<li>
+							<a href="#<?php echo esc_attr( $chapter['id'] ); ?>">
+								<?php echo esc_html( $chapter['nav_label'] ); ?>
+							</a>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+			<?php endif; ?>
+		</div>
+
+		<?php if ( $overview_blocks ) : ?>
+			<div class="tool-overview__body">
+				<?php foreach ( $overview_blocks as $block_html ) : ?>
+					<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+	</section>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
+ * Render chapter-style content for plugin/tool pages.
+ *
+ * @param array $tool_sections Sections from nunlab_get_tool_content_sections().
+ * @return string
+ */
+function nunlab_render_tool_chapters( $tool_sections ) {
+	$chapters = isset( $tool_sections['chapters'] ) && is_array( $tool_sections['chapters'] ) ? $tool_sections['chapters'] : array();
+
+	if ( empty( $chapters ) ) {
 		return '';
 	}
 
 	ob_start();
 	?>
 	<div class="tool-chapters">
-		<?php foreach ( $sections as $section ) : ?>
-			<section class="tool-chapter">
-				<?php if ( '' !== $section['heading'] ) : ?>
-					<div class="tool-chapter__heading">
-						<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
-				<?php endif; ?>
+		<?php foreach ( $chapters as $chapter ) : ?>
+			<section id="<?php echo esc_attr( $chapter['id'] ); ?>" class="tool-chapter">
+				<div class="tool-chapter__heading">
+					<?php echo $chapter['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
 
-				<?php if ( ! empty( $section['blocks'] ) ) : ?>
+				<?php if ( ! empty( $chapter['blocks'] ) ) : ?>
 					<div class="tool-chapter__body">
-						<?php foreach ( $section['blocks'] as $block_html ) : ?>
+						<?php foreach ( $chapter['blocks'] as $block_html ) : ?>
 							<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endforeach; ?>
 					</div>

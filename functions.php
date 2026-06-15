@@ -1,6 +1,6 @@
 <?php
 /**
- * N:UN Lab Theme Functions
+ * N:UN Theme Functions
  *
  * @package nunlab-theme
  */

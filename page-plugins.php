@@ -37,7 +37,6 @@ get_header();
 			$plugins_description = has_excerpt() ? get_the_excerpt() : __( 'Plugins and practical systems for moving between data, geometry, and design.', 'nunlab-theme' );
 			?>
 			<header class="archive-header archive-header--plugins">
-				<p class="archive-eyebrow"><?php esc_html_e( 'Plugin Index', 'nunlab-theme' ); ?></p>
 				<h1 class="archive-title"><?php the_title(); ?></h1>
 				<?php if ( '' !== trim( $plugins_description ) ) : ?>
 					<p class="archive-description">

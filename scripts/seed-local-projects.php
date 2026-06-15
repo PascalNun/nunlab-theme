@@ -1,6 +1,6 @@
 <?php
 /**
- * Seed local example projects for the N:UN Lab theme.
+ * Seed local example projects for the N:UN theme.
  *
  * Run with:
  * wp --path=.wp-local eval-file scripts/seed-local-projects.php

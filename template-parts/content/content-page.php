@@ -13,6 +13,10 @@ $entry_classes = array( 'entry', 'entry--page' );
 if ( is_page( 'legal-notice' ) ) {
 	$entry_classes[] = 'entry--legal';
 }
+
+if ( is_page( 'contact' ) ) {
+	$entry_classes[] = 'entry--contact';
+}
 ?>
 <article id="post-<?php the_ID(); ?>" <?php post_class( $entry_classes ); ?>>
 	<header class="entry-header">

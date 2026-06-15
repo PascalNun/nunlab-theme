@@ -34,4 +34,4 @@ done
 pkill -f "php -S 127.0.0.1:8080" >/dev/null 2>&1 || true
 pkill -f "sass --watch .*assets/scss/style.scss:.*assets/css/style.css" >/dev/null 2>&1 || true
 
-echo "NUNLab dev environment stopped."
+echo "N:UN dev environment stopped."

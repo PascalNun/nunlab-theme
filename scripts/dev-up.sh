@@ -74,4 +74,4 @@ start_sass_watch() {
 start_wp_server
 start_sass_watch
 
-echo "NUNLab dev environment is ready."
+echo "N:UN dev environment is ready."

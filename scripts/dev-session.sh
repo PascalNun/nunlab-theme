@@ -56,6 +56,6 @@ if ! kill -0 "$SASS_PID" >/dev/null 2>&1; then
 fi
 
 open "http://127.0.0.1:8080"
-echo "NUNLab dev session is running. Stop the debug session to shut it down."
+echo "N:UN dev session is running. Stop the debug session to shut it down."
 
 wait "$WP_PID" "$SASS_PID"

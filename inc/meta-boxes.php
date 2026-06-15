@@ -146,6 +146,11 @@ function nunlab_get_tool_detail_fields() {
 			'description' => __( 'Optional release/version label shown near the plugin title.', 'nunlab-theme' ),
 			'type'        => 'text',
 		),
+		'nunlab_tool_icon_url'        => array(
+			'label'       => __( 'Plugin Icon URL', 'nunlab-theme' ),
+			'description' => __( 'Optional small SVG or image icon shown beside the plugin title.', 'nunlab-theme' ),
+			'type'        => 'url',
+		),
 		'nunlab_tool_walkthrough_url' => array(
 			'label'       => __( 'YouTube Walkthrough URL', 'nunlab-theme' ),
 			'description' => __( 'A YouTube URL for the walkthrough video displayed near the top of the plugin page.', 'nunlab-theme' ),
@@ -366,7 +371,7 @@ function nunlab_render_tool_details_meta_box( $post ) {
 		<?php endforeach; ?>
 
 		<p class="description">
-			<?php esc_html_e( 'Use the main editor for chapter-style sections. Start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
+			<?php esc_html_e( 'Use the featured image for the plugin card/poster. Use the main editor for chapter-style sections: start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
 		</p>
 	</div>
 	<?php

@@ -1,6 +1,6 @@
 <?php
 /**
- * Seed local example notebook posts for the N:UN Lab theme.
+ * Seed local example notebook posts for the N:UN theme.
  *
  * Run with:
  * php -d error_reporting=24575 /opt/homebrew/bin/wp --path=.wp-local eval-file scripts/seed-local-notebook-posts.php
@@ -119,7 +119,7 @@ $posts = array(
 <!-- /wp:quote -->
 
 <!-- wp:paragraph -->
-<p>For N:UN Lab, the notebook should stay lighter than the project pages but not feel disposable. It is a working layer, not a leftovers page.</p>
+<p>For N:UN, the notebook should stay lighter than the project pages but not feel disposable. It is a working layer, not a leftovers page.</p>
 <!-- /wp:paragraph -->
 ',
 	),
