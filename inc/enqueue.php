@@ -19,6 +19,7 @@ function nunlab_enqueue_assets() {
 	$script_version      = file_exists( $script_path ) ? (string) filemtime( $script_path ) : NUNLAB_THEME_VERSION;
 	$front_script_path   = NUNLAB_THEME_DIR . '/assets/js/front-page.js';
 	$project_script_path = NUNLAB_THEME_DIR . '/assets/js/project-gallery.js';
+	$tool_script_path    = NUNLAB_THEME_DIR . '/assets/js/tool-content.js';
 
 	// Main theme stylesheet.
 	wp_enqueue_style(
@@ -54,6 +55,16 @@ function nunlab_enqueue_assets() {
 			NUNLAB_THEME_URI . '/assets/js/project-gallery.js',
 			array( 'nunlab-theme-script' ),
 			(string) filemtime( $project_script_path ),
+			true
+		);
+	}
+
+	if ( is_singular( 'tool' ) && file_exists( $tool_script_path ) ) {
+		wp_enqueue_script(
+			'nunlab-tool-content-script',
+			NUNLAB_THEME_URI . '/assets/js/tool-content.js',
+			array( 'nunlab-theme-script' ),
+			(string) filemtime( $tool_script_path ),
 			true
 		);
 	}

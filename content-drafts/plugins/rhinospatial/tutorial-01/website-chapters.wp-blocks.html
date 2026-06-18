@@ -1,0 +1,239 @@
+<!-- wp:paragraph -->
+<p>RhinoSpatial is a Grasshopper toolkit for bringing site context directly into Rhino. It is built around one shared <code>Spatial Context</code>: define a study area once, then align maps, vector layers, terrain, building geometry, OpenStreetMap context, and visual reference data inside the same Rhino / Grasshopper workspace.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The plugin is meant for early site analysis, context modeling, concept studies, and design workflows where spatial data should stay close to the model instead of living in a separate GIS detour.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The downloadable Grasshopper definitions show complete starting workflows for WFS, WMS, GeoTIFF, terrain, LoD2 buildings, OSM, and Google 3D Tiles reference context. Replace the service URLs, local files, layers, and API keys with sources that match your own site, data rights, and licensing situation.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/00-rhinospatial-reference-workflow.gh">Download .gh: Full reference workflow</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/01-wms-wfs-basics.gh">Download .gh: WMS + WFS basics</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/02-geotiff-terrain.gh">Download .gh: GeoTIFF + terrain</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/03-lod2-buildings.gh">Download .gh: LoD2 buildings</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/04-osm-context.gh">Download .gh: OSM context</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/05-google-3d-tiles-reference.gh">Download .gh: Google 3D Tiles reference</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2>1. Installation</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>The simplest installation path is Rhino's <code>Package Manager</code>. Search for RhinoSpatial and enable pre-release packages while the plugin is still in alpha. Install it, restart Rhino if Package Manager asks you to, and open Grasshopper to check that the RhinoSpatial tab and components are available.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>You can also install a release manually from GitHub. Download the current ZIP package from the releases page and place the plugin files where Rhino / Grasshopper can load them. For most users, Package Manager is the cleaner first option; the manual package is useful when you want to pin a specific alpha version.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/releases">RhinoSpatial releases on GitHub</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial">RhinoSpatial source repository</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>Because RhinoSpatial is in alpha, keep older working definitions around when testing a new release. Component names and the shared <code>Spatial Context</code> workflow are intended to stay stable, but provider behavior, local-file handling, and edge cases are still being refined.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"id":65,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-00-spatial-installation.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-00-spatial-installation-1024x576.jpg" alt="Rhino Package Manager showing RhinoSpatial installation" class="wp-image-65"/></a><figcaption>RhinoSpatial can be installed through Rhino's Package Manager. Enable pre-releases while the plugin is still in alpha.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>2. Spatial Context</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p><code>Spatial Context</code> is the anchor of the workflow. It stores the selected study area, coordinate reference information, and placement logic that the other RhinoSpatial components use to line up their outputs.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The only required interaction is <code>Open Map</code>. Click the button, draw one rectangle in the browser helper, resize it if needed, and close the helper window. The selected area then becomes the shared input for WFS, WMS, GeoTIFF, terrain, LoD2, OSM, and 3D Tiles workflows.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>By default, RhinoSpatial localizes data near Rhino's 0,0 point. That keeps geometry workable in Rhino and avoids the display issues that often come with large real-world coordinates. If a definition really needs source coordinates, enable <code>Use Absolute Coordinates</code>.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The optional <code>Reference URL</code> input can make area selection easier. For example, connect a WFS or WMS source before opening the map helper, and the helper can start around the relevant service area instead of a generic location.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"id":55,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-00-spatial-context.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-00-spatial-context-1024x595.jpg" alt="RhinoSpatial Spatial Context reference definition in Grasshopper" class="wp-image-55"/></a><figcaption>Spatial Context defines the shared study area used by every other RhinoSpatial component.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>3. Load WFS</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load WFS</code> for vector features such as parcels, boundaries, planning layers, roads, or building footprints. The component is named for WFS, but the source model is broader: it can also work with OGC API Features URLs and local vector files such as Shapefiles or GeoJSON.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>A typical service workflow starts with <code>List WFS Layers</code>. Connect the WFS URL, inspect the available layer names in a panel, choose the layer or layers you need, and connect them to <code>Load WFS</code> together with the same <code>Spatial Context</code> used by the rest of the definition.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><code>Load WFS</code> outputs Grasshopper geometry grouped by layer and feature. Polygon and line features become curves; point features become points. Unlike WMS imagery, vector workflows can load multiple layers through one component. Keep the selected study area reasonably bounded, especially when using broad public services, so Grasshopper does not request more features than you actually need.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/01-wms-wfs-basics.gh">Download .gh: WMS + WFS basics</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":57,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-02-wfs-vector-data.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-02-wfs-vector-data-1024x597.jpg" alt="Load WFS vector data workflow in Grasshopper" class="wp-image-57"/></a><figcaption>Load WFS brings vector features into the same local study space.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>4. Load WMS</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load WMS</code> for map imagery, aerial images, orthophotos, raster overlays, or other image layers served through a WMS endpoint. In RhinoSpatial, the result is an aligned image mesh with a material, so the imagery can sit under or alongside the other context layers.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The common pattern is to connect the WMS URL to <code>List WMS Layers</code>, inspect the available layers, choose one layer with <code>List Item</code>, and connect that layer, the WMS URL, and <code>Spatial Context</code> to <code>Load WMS</code>.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>A single <code>Load WMS</code> component loads one layer at a time. If you want several WMS layers, use multiple components so each image request stays explicit and readable. WMS is image-based context; if you need editable lines, parcels, or feature attributes, use the WFS/vector workflow instead.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/01-wms-wfs-basics.gh">Download .gh: WMS + WFS basics</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":56,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-01-wms-map-imagery.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-01-wms-map-imagery-1024x598.jpg" alt="Load WMS map imagery workflow in Grasshopper" class="wp-image-56"/></a><figcaption>WMS imagery can be aligned to vector geometry through the same Spatial Context.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>5. Load GeoTIFF</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load GeoTIFF</code> when you have a local georeferenced raster image, such as a plan, map export, satellite image, orthophoto, or DEM-derived raster that should sit in the same study area.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The component expects a local file path. Connect a Grasshopper <code>File Path</code> component to a <code>.tif</code> or <code>.tiff</code> file, then connect the same <code>Spatial Context</code>. RhinoSpatial reads the georeferencing and outputs an aligned image mesh, material, image file path, and status message.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The file needs readable geospatial metadata. If RhinoSpatial cannot read the EPSG / coordinate information, or if the raster does not overlap the selected area, it cannot safely decide where the image belongs.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/02-geotiff-terrain.gh">Download .gh: GeoTIFF + terrain</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":58,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-03-geotiff.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-03-geotiff-1024x591.jpg" alt="Load GeoTIFF workflow in Grasshopper" class="wp-image-58"/></a><figcaption>Load GeoTIFF places a local georeferenced raster into the shared study space.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>6. Load Terrain</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load Terrain</code> to create a ground mesh for the selected study area. This is useful when the model needs elevation context, when LoD2 or OSM buildings should be checked against terrain, or when a flat plan is not enough.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><code>Load Terrain</code> can use a small built-in fallback for quick orientation, but project work should use explicit terrain sources where possible. Supported source types include WCS services, local GeoTIFF DEM files, Esri ASCII Grid files, and regular XYZ/CSV terrain grids.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>As with the other components, the terrain source is clipped and placed through <code>Spatial Context</code>. Keep the selected area and source resolution small enough for interactive Grasshopper work, especially when testing public services or high-resolution DEM files.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/02-geotiff-terrain.gh">Download .gh: GeoTIFF + terrain</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":59,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-04-terrain.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-04-terrain-1024x591.jpg" alt="Load Terrain workflow in Grasshopper" class="wp-image-59"/></a><figcaption>Terrain data gives the shared study area a ground surface for checking alignment and elevation.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>7. Load LoD2 Buildings</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load LoD2 Buildings</code> for official 3D building and roof geometry. This is the component to reach for when you need modeled urban context rather than simple footprints.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The <code>LoD2 Source</code> input can be a LoD2 WFS service, local CityGML / GML / XML files, local CityJSON files, folders, or ZIP archives. If the source is a WFS service, choose the layer when needed. If the source is local data, the <code>Layer</code> input can often stay empty or act as a label.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><code>Load LoD2 Buildings</code> outputs building Breps grouped by layer and building. LoD2 data can be large and provider-specific. RhinoSpatial tries to filter to the selected <code>Spatial Context</code>, but local files and broad services may still take time to inspect. Start with a small area, confirm that the source responds, and then expand carefully.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/03-lod2-buildings.gh">Download .gh: LoD2 buildings</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":60,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-05-lod2-buildings.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-05-lod2-buildings-1024x595.jpg" alt="Load LoD2 Buildings workflow in Grasshopper" class="wp-image-60"/></a><figcaption>LoD2 buildings provide official 3D roof and building geometry inside the shared context.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>8. Load OSM</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Use <code>Load OSM</code> for lightweight OpenStreetMap context. It is useful for quick black-plan style studies, site diagrams, and general orientation when official project data is not needed for every layer.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The component queries OpenStreetMap data through the Overpass API. Buildings and roads are enabled by default; optional Boolean inputs can add water, green or open space, and rail context.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>OSM is excellent for quick context, but it is community-maintained data. Treat it as reference material unless your project explicitly accepts OSM as a source, and keep the selected area modest so the Overpass request remains responsive.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/04-osm-context.gh">Download .gh: OSM context</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":62,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-07-osm-context.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-07-osm-context-1024x585.jpg" alt="Load OSM workflow in Grasshopper" class="wp-image-62"/></a><figcaption>Load OSM adds lightweight context groups such as buildings, roads, water, green space, and rail.</figcaption></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>9. 3D Tiles Viewer (Google)</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p><code>3D Tiles Viewer (Google)</code> is different from the other source components. Treat it as a bounded visual reference viewer for Google Photorealistic 3D Tiles, not as a normal RhinoSpatial import source.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Connect the same <code>Spatial Context</code>, connect a user-managed Google Maps API key, and set <code>Enable</code> to <code>True</code> only while you want to inspect the reference context. RhinoSpatial requests bounded Map Tiles API content for the selected area, decodes a limited set of GLB tile content, and draws temporary preview meshes with aligned materials in the Rhino viewport.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The component itself does not bake its preview geometry: its bake methods are empty. It does output decoded preview meshes and materials to Grasshopper, but those outputs should be understood as contextual viewing support, not as an export path, offline cache, extraction workflow, or substitute for official project data.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Technically, RhinoSpatial keeps decoded tile content in memory during the session for preview display. It does not ship, store, or share a Google API key. Users still need to manage their own Google Cloud project, billing, API restrictions, attribution, and compliance with the current Google Maps Platform terms and Map Tiles API policies.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Google's Map Tiles API documentation is especially relevant here: Photorealistic 3D Tiles are framed as a visualization service, and the policies place restrictions around storage, caching, extraction, offline use, and attribution. If you use the viewer in real work, review the current policy, terms, billing, and EEA documentation before relying on it in a project workflow.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><li><a href="https://developers.google.com/maps/documentation/tile/3d-tiles">Google Photorealistic 3D Tiles documentation</a></li><li><a href="https://developers.google.com/maps/documentation/tile/get-api-key">Set up the Map Tiles API and API key</a></li><li><a href="https://developers.google.com/maps/documentation/tile/policies">Map Tiles API policies</a></li><li><a href="https://cloud.google.com/maps-platform/terms">Google Maps Platform Terms of Service</a></li><li><a href="https://developers.google.com/maps/documentation/tile/usage-and-billing">Map Tiles API usage and billing</a></li><li><a href="https://developers.google.com/maps/comms/eea/map-tiles">Map Tiles API EEA changes</a></li><li><a href="https://github.com/PascalNun/RhinoSpatial/raw/main/examples/gh/05-google-3d-tiles-reference.gh">Download .gh: Google 3D Tiles reference</a></li></ul>
+<!-- /wp:list -->
+
+<!-- wp:image {"id":61,"sizeSlug":"large","linkDestination":"media"} -->
+<figure class="wp-block-image size-large"><a href="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-06-google-3d-tiles-reference.jpg"><img src="http://127.0.0.1:8080/wp-content/uploads/2026/06/workflow-06-google-3d-tiles-reference-1024x591.jpg" alt="3D Tiles Viewer (Google) workflow in Grasshopper" class="wp-image-61"/></a><figcaption>The Google 3D Tiles viewer is a contextual preview layer aligned to Spatial Context, not an editable data source.</figcaption></figure>
+<!-- /wp:image -->

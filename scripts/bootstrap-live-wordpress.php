@@ -33,11 +33,13 @@ function nunlab_ensure_page( string $title, string $slug ): int {
 	$page = get_page_by_path( $slug );
 
 	if ( $page instanceof WP_Post ) {
-		if ( 'publish' !== $page->post_status ) {
+		if ( 'publish' !== $page->post_status || 'closed' !== $page->comment_status || 'closed' !== $page->ping_status ) {
 			wp_update_post(
 				array(
-					'ID'          => $page->ID,
-					'post_status' => 'publish',
+					'ID'             => $page->ID,
+					'post_status'    => 'publish',
+					'comment_status' => 'closed',
+					'ping_status'    => 'closed',
 				)
 			);
 		}
@@ -47,12 +49,14 @@ function nunlab_ensure_page( string $title, string $slug ): int {
 
 	return (int) wp_insert_post(
 		array(
-			'post_type'    => 'page',
-			'post_status'  => 'publish',
-			'post_title'   => $title,
-			'post_name'    => $slug,
-			'post_content' => '',
-			'post_excerpt' => '',
+			'post_type'      => 'page',
+			'post_status'    => 'publish',
+			'post_title'     => $title,
+			'post_name'      => $slug,
+			'post_content'   => '',
+			'post_excerpt'   => '',
+			'comment_status' => 'closed',
+			'ping_status'    => 'closed',
 		)
 	);
 }
@@ -184,6 +188,7 @@ $page_ids = array(
 	'plugins'   => nunlab_ensure_page( 'Plugins', 'plugins' ),
 	'contact'   => nunlab_ensure_page( 'Contact', 'contact' ),
 	'legal'     => nunlab_ensure_page( 'Legal Notice', 'legal-notice' ),
+	'privacy'   => nunlab_ensure_page( 'Privacy Policy', 'privacy-policy' ),
 );
 
 nunlab_trash_default_content();
@@ -249,6 +254,17 @@ nunlab_ensure_menu_item(
 	)
 );
 
+nunlab_ensure_menu_item(
+	$legal_id,
+	array(
+		'menu-item-title'     => 'Privacy Policy',
+		'menu-item-object-id' => $page_ids['privacy'],
+		'menu-item-object'    => 'page',
+		'menu-item-type'      => 'post_type',
+		'menu-item-status'    => 'publish',
+	)
+);
+
 echo wp_json_encode(
 	array(
 		'theme'        => $theme_stylesheet,
@@ -258,6 +274,7 @@ echo wp_json_encode(
 		'manifesto'    => $page_ids['manifesto'],
 		'plugins_page' => $page_ids['plugins'],
 		'contact_page' => $page_ids['contact'],
+		'privacy_page' => $page_ids['privacy'],
 		'menu_id'      => $menu_id,
 		'legal_menu_id' => $legal_id,
 	),

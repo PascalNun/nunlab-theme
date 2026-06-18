@@ -21,4 +21,5 @@ require_once NUNLAB_THEME_DIR . '/inc/enqueue.php';
 require_once NUNLAB_THEME_DIR . '/inc/post-types.php';
 require_once NUNLAB_THEME_DIR . '/inc/template-tags.php';
 require_once NUNLAB_THEME_DIR . '/inc/meta-boxes.php';
+require_once NUNLAB_THEME_DIR . '/inc/admin-analytics.php';
 require_once NUNLAB_THEME_DIR . '/inc/hooks.php';

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 $entry_classes = array( 'entry', 'entry--page' );
 
-if ( is_page( 'legal-notice' ) ) {
+if ( is_page( array( 'legal-notice', 'privacy-policy' ) ) ) {
 	$entry_classes[] = 'entry--legal';
 }
 

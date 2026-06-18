@@ -35,13 +35,25 @@ $chapter_content   = nunlab_render_tool_chapters( $tool_sections );
 	<?php if ( '' !== $walkthrough_embed ) : ?>
 		<section class="tool-walkthrough" aria-label="<?php esc_attr_e( 'Walkthrough video', 'nunlab-theme' ); ?>">
 			<div class="tool-walkthrough__frame">
-				<iframe
-					src="<?php echo esc_url( $walkthrough_embed ); ?>"
-					title="<?php echo esc_attr( sprintf( __( '%s walkthrough video', 'nunlab-theme' ), get_the_title() ) ); ?>"
-					loading="lazy"
-					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-					allowfullscreen
-				></iframe>
+				<button
+					class="tool-walkthrough__load"
+					type="button"
+					data-tool-youtube-src="<?php echo esc_url( $walkthrough_embed ); ?>"
+					data-tool-youtube-title="<?php echo esc_attr( sprintf( __( '%s walkthrough video', 'nunlab-theme' ), get_the_title() ) ); ?>"
+				>
+					<?php if ( has_post_thumbnail() ) : ?>
+						<?php the_post_thumbnail( 'nunlab-project-large', array( 'class' => 'tool-walkthrough__poster' ) ); ?>
+					<?php endif; ?>
+					<span class="tool-walkthrough__play" aria-hidden="true"></span>
+					<span class="tool-walkthrough__label"><?php esc_html_e( 'Play walkthrough video', 'nunlab-theme' ); ?></span>
+				</button>
+				<noscript>
+					<p class="tool-walkthrough__noscript">
+						<a href="<?php echo esc_url( $walkthrough_url ); ?>" target="_blank" rel="noreferrer noopener">
+							<?php esc_html_e( 'Watch walkthrough video on YouTube', 'nunlab-theme' ); ?>
+						</a>
+					</p>
+				</noscript>
 			</div>
 		</section>
 	<?php elseif ( has_post_thumbnail() ) : ?>
