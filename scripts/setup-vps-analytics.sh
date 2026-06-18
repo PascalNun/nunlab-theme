@@ -50,36 +50,6 @@ scp_command() {
 	scp "${SSH_OPTIONS[@]}" "$@"
 }
 
-run_with_password() {
-	local command_string="$1"
-
-	if [[ -z "${NUNLAB_VPS_ROOT_PASSWORD:-}" ]]; then
-		/bin/sh -lc "$command_string"
-		return
-	fi
-
-	EXPECT_COMMAND="$command_string" EXPECT_PASSWORD="$NUNLAB_VPS_ROOT_PASSWORD" expect <<'EOF'
-log_user 1
-set timeout -1
-set command_string $env(EXPECT_COMMAND)
-set password $env(EXPECT_PASSWORD)
-
-spawn /bin/sh -lc $command_string
-
-expect {
-	-re "(?i)password:" {
-		send "$password\r"
-		exp_continue
-	}
-	eof
-}
-
-catch wait result
-set exit_status [lindex $result 3]
-exit $exit_status
-EOF
-}
-
 echo "Installing analytics generator on the VPS..."
 scp_command "${ROOT_DIR}/scripts/analytics/generate-summary.py" "${NUNLAB_VPS_USER}@${NUNLAB_VPS_HOST}:${REMOTE_SCRIPT_STAGING}"
 

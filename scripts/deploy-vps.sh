@@ -47,41 +47,11 @@ rsync_ssh_command() {
 	done
 }
 
-run_with_password() {
-	local command_string="$1"
-
-	if [[ -z "${NUNLAB_VPS_ROOT_PASSWORD:-}" ]]; then
-		/bin/sh -lc "$command_string"
-		return
-	fi
-
-	EXPECT_COMMAND="$command_string" EXPECT_PASSWORD="$NUNLAB_VPS_ROOT_PASSWORD" expect <<'EOF'
-log_user 1
-set timeout -1
-set command_string $env(EXPECT_COMMAND)
-set password $env(EXPECT_PASSWORD)
-
-spawn /bin/sh -lc $command_string
-
-expect {
-	-re "(?i)password:" {
-		send "$password\r"
-		exp_continue
-	}
-	eof
-}
-
-catch wait result
-set exit_status [lindex $result 3]
-exit $exit_status
-EOF
-}
-
 echo "Creating remote theme directory..."
 ssh_command "${REMOTE_SUDO} mkdir -p $(printf '%q' "$REMOTE_THEME_DIR") && ${REMOTE_SUDO} chown -R $(printf '%q' "$NUNLAB_VPS_USER"):$(printf '%q' "$NUNLAB_VPS_USER") $(printf '%q' "$REMOTE_THEME_DIR")"
 
 echo "Syncing theme files to ${REMOTE_THEME_DIR}..."
-run_with_password "rsync -az --delete --exclude-from='${EXCLUDE_FILE}' -e '$(rsync_ssh_command)' '${ROOT_DIR}/' '${NUNLAB_VPS_USER}@${NUNLAB_VPS_HOST}:${REMOTE_THEME_DIR}/'"
+rsync -az --delete --exclude-from="${EXCLUDE_FILE}" -e "$(rsync_ssh_command)" "${ROOT_DIR}/" "${NUNLAB_VPS_USER}@${NUNLAB_VPS_HOST}:${REMOTE_THEME_DIR}/"
 
 echo "Normalizing ownership and permissions..."
 ssh_command "${REMOTE_SUDO} chown -R www-data:www-data $(printf '%q' "$REMOTE_THEME_DIR") && ${REMOTE_SUDO} find $(printf '%q' "$REMOTE_THEME_DIR") -type d -exec chmod 755 {} + && ${REMOTE_SUDO} find $(printf '%q' "$REMOTE_THEME_DIR") -type f -exec chmod 644 {} +"

@@ -46,6 +46,7 @@ Supporting pages include `About`, `Contact`, `Manifesto`, and `Legal Notice`.
 - modular SCSS compiled to `assets/css/style.css`
 - WordPress block editor for authored content
 - self-hosted Barlow / Barlow Condensed fonts
+- private server-log analytics dashboard in WordPress admin
 - no Bootstrap, React, Vue, or page-builder dependency
 
 ## Public Readability
@@ -56,7 +57,7 @@ The repository is organized so that a reader can understand the site without nee
 - templates and partials describe the front-end structure
 - SCSS carries most of the visual system
 - JavaScript enhances already-rendered HTML
-- scripts document the local and VPS workflows used for this specific site
+- scripts document local development, deployment, and server-log analytics workflows
 
 Live editorial content, uploaded media, SMTP secrets, and server settings are intentionally outside the repository.
 
@@ -79,11 +80,15 @@ NunLAB/
 │   ├── hooks.php             # filters, search, favicons, image quality
 │   ├── meta-boxes.php        # editable project/front-page/tool fields
 │   ├── post-types.php        # project, tool, and project_type registration
+│   ├── admin-analytics.php   # private WP admin analytics dashboard
 │   ├── template-tags.php     # rendering and media helpers
 │   └── theme-setup.php       # theme supports and menus
 ├── scripts/
+│   ├── analytics/
+│   │   └── generate-summary.py
 │   ├── bootstrap-live-wordpress.php
 │   ├── deploy-vps.sh
+│   ├── setup-vps-analytics.sh
 │   ├── dev-session.sh
 │   ├── dev-up.sh
 │   ├── dev-down.sh
@@ -286,11 +291,36 @@ php -d error_reporting=24575 /opt/homebrew/bin/wp --path=.wp-local eval-file scr
 1. Open `Appearance > Menus`
 2. Edit the `Legal Footer Menu`
 
+### Analytics
+
+The private WordPress dashboard includes `Dashboard > N:UN Analytics`.
+
+It reads a generated JSON summary from the server and does not add a public analytics script to the site. The dashboard is intended as a lightweight signal layer for a small portfolio/tool site, not as a Google Analytics replacement.
+
+The main metrics distinguish between:
+
+- broad page views
+- approximate unique IPs
+- stricter likely visits
+- content views on non-homepage pages
+- filtered bot/scanner/noise requests
+
 ## Live Deployment
 
 The deploy scripts reflect the workflow for `pascalnun.eu`. They sync theme code to the VPS over SSH and `rsync`; the WordPress database and uploaded media remain live-site state.
 
 Local server configuration belongs in `.env.local`, which is ignored by Git. The exact variables are read by `scripts/deploy-vps.sh`.
+
+Expected local variables include:
+
+```bash
+NUNLAB_VPS_HOST="example-host-or-ip"
+NUNLAB_VPS_USER="nun"
+NUNLAB_VPS_SSH_KEY="$HOME/.ssh/nunlab_vps"
+NUNLAB_VPS_WP_ROOT="/var/www/wordpress"
+```
+
+The current live workflow uses key-based SSH through a non-root deploy user. Password-based SSH and root SSH login are disabled on the VPS. Personal SSH instructions belong in `.local/`, which is ignored by Git.
 
 Full deploy:
 
@@ -322,6 +352,28 @@ The live setup uses:
 
 The theme registers a large project image size and applies higher WordPress image quality settings. Uploaded media remains in WordPress uploads.
 
+### Local Log Analytics
+
+The analytics setup is server-side and privacy-light:
+
+- nginx access logs are summarized locally on the VPS
+- the generator writes aggregate JSON to `/var/lib/nunlab-analytics/summary.json`
+- WordPress reads that JSON in a private admin page
+- no visitor-side analytics JavaScript is loaded
+- no visitor IP addresses are stored in WordPress
+
+Provision or refresh the VPS analytics generator:
+
+```bash
+./scripts/setup-vps-analytics.sh
+```
+
+The summarizer lives at:
+
+```text
+scripts/analytics/generate-summary.py
+```
+
 ## Browser Notes
 
 Modern Chrome, Safari, Firefox, and Edge are supported.
@@ -337,7 +389,9 @@ Hero behavior varies by browser and device:
 Expected local-only files:
 
 - `.env.local`
+- `.local/`
 - `.wp-local/`
+- `content-drafts/`
 - `node_modules/`
 - `.vscode/`
 - OS files such as `.DS_Store`
@@ -355,6 +409,21 @@ Theme code lives in Git.
 Content lives in WordPress.
 
 The repository should stay lean enough to understand directly. The live site can grow through authored work, writing, images, and plugin documentation without forcing the theme into a heavier system than the project needs.
+
+## Publication Notes
+
+The repository is intentionally close to public-readable, but it remains a site-specific theme rather than a packaged product.
+
+Before making the repository public, check:
+
+- `.env.local`, `.local/`, `.wp-local/`, `content-drafts/`, uploads, backups, and logs are ignored
+- no SMTP credentials, SSH keys, database dumps, or server passwords are committed
+- bundled brand, portfolio, hero, and plugin imagery are intentionally published
+- public documentation does not depend on private VPS details
+- generated/cache files such as Python `__pycache__` are not committed
+- any previously committed drafts or sensitive files have either been accepted as public history or removed through a clean-history publication process
+
+The most reusable parts for other small WordPress sites are the lightweight classic-theme structure, the content-model approach, and the no-public-script server-log analytics dashboard.
 
 ## License
 
