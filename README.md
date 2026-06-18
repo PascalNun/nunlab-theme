@@ -410,20 +410,6 @@ Content lives in WordPress.
 
 The repository should stay lean enough to understand directly. The live site can grow through authored work, writing, images, and plugin documentation without forcing the theme into a heavier system than the project needs.
 
-## Publication Notes
-
-The repository is intentionally close to public-readable, but it remains a site-specific theme rather than a packaged product.
-
-Before making the repository public, check:
-
-- `.env.local`, `.local/`, `.wp-local/`, `content-drafts/`, uploads, backups, and logs are ignored
-- no SMTP credentials, SSH keys, database dumps, or server passwords are committed
-- bundled brand, portfolio, hero, and plugin imagery are intentionally published
-- public documentation does not depend on private VPS details
-- generated/cache files such as Python `__pycache__` are not committed
-- any previously committed drafts or sensitive files have either been accepted as public history or removed through a clean-history publication process
-
-The most reusable parts for other small WordPress sites are the lightweight classic-theme structure, the content-model approach, and the no-public-script server-log analytics dashboard.
 
 ## License
 
