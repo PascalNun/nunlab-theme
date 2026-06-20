@@ -199,6 +199,11 @@ function nunlab_get_tool_detail_fields() {
 			'description' => __( 'A YouTube URL for the walkthrough video displayed near the top of the plugin page.', 'nunlab-theme' ),
 			'type'        => 'url',
 		),
+		'nunlab_tool_walkthrough_chapters' => array(
+			'label'       => __( 'Walkthrough Chapters', 'nunlab-theme' ),
+			'description' => __( 'Optional timestamps for the N:UN player timeline. Use the same format as YouTube chapters, for example: 0:00 Overview.', 'nunlab-theme' ),
+			'type'        => 'textarea',
+		),
 		'nunlab_tool_github_url'      => array(
 			'label'       => __( 'GitHub URL', 'nunlab-theme' ),
 			'description' => __( 'Repository or source-code link.', 'nunlab-theme' ),
@@ -285,17 +290,38 @@ function nunlab_register_theme_meta() {
 	);
 
 	foreach ( nunlab_get_tool_detail_fields() as $meta_key => $field ) {
+		$sanitize_callback = 'sanitize_text_field';
+
+		if ( 'url' === $field['type'] ) {
+			$sanitize_callback = 'esc_url_raw';
+		}
+
+		if ( 'textarea' === $field['type'] ) {
+			$sanitize_callback = 'sanitize_textarea_field';
+		}
+
 		register_post_meta(
 			'tool',
 			$meta_key,
 			array(
 				'type'              => 'string',
 				'single'            => true,
-				'sanitize_callback' => 'url' === $field['type'] ? 'esc_url_raw' : 'sanitize_text_field',
+				'sanitize_callback' => $sanitize_callback,
 				'show_in_rest'      => true,
 			)
 		);
 	}
+
+	register_post_meta(
+		'tool',
+		'nunlab_tool_youtube_custom_controls',
+		array(
+			'type'              => 'boolean',
+			'single'            => true,
+			'sanitize_callback' => 'rest_sanitize_boolean',
+			'show_in_rest'      => true,
+		)
+	);
 
 	foreach (
 		array(
@@ -473,6 +499,8 @@ function nunlab_render_project_meta_box( $post ) {
  * @param WP_Post $post Current tool.
  */
 function nunlab_render_tool_details_meta_box( $post ) {
+	$use_custom_youtube_controls = (bool) get_post_meta( $post->ID, 'nunlab_tool_youtube_custom_controls', true );
+
 	wp_nonce_field( 'nunlab_save_tool_details', 'nunlab_tool_details_nonce' );
 	?>
 	<div class="nunlab-admin-fields">
@@ -482,16 +510,40 @@ function nunlab_render_tool_details_meta_box( $post ) {
 				<label class="nunlab-admin-fields__label" for="<?php echo esc_attr( $meta_key ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 				</label>
-				<input
-					id="<?php echo esc_attr( $meta_key ); ?>"
-					name="<?php echo esc_attr( $meta_key ); ?>"
-					type="<?php echo esc_attr( $field['type'] ); ?>"
-					class="widefat"
-					value="<?php echo esc_attr( $value ); ?>"
-				/>
+				<?php if ( 'textarea' === $field['type'] ) : ?>
+					<textarea
+						id="<?php echo esc_attr( $meta_key ); ?>"
+						name="<?php echo esc_attr( $meta_key ); ?>"
+						class="widefat"
+						rows="6"
+					><?php echo esc_textarea( $value ); ?></textarea>
+				<?php else : ?>
+					<input
+						id="<?php echo esc_attr( $meta_key ); ?>"
+						name="<?php echo esc_attr( $meta_key ); ?>"
+						type="<?php echo esc_attr( $field['type'] ); ?>"
+						class="widefat"
+						value="<?php echo esc_attr( $value ); ?>"
+					/>
+				<?php endif; ?>
 				<span class="description"><?php echo esc_html( $field['description'] ); ?></span>
 			</p>
 		<?php endforeach; ?>
+
+		<p class="nunlab-admin-fields__field">
+			<label>
+				<input
+					type="checkbox"
+					name="nunlab_tool_youtube_custom_controls"
+					value="1"
+					<?php checked( $use_custom_youtube_controls ); ?>
+				/>
+				<?php esc_html_e( 'Use N:UN controls for the YouTube walkthrough', 'nunlab-theme' ); ?>
+			</label>
+			<span class="description">
+				<?php esc_html_e( 'Optional. Keeps the designed poster and overlays the N:UN controls after play. YouTube still owns the embedded video and some browser/device behavior.', 'nunlab-theme' ); ?>
+			</span>
+		</p>
 
 		<p class="description">
 			<?php esc_html_e( 'Use the featured image for the plugin card/poster. Use the main editor for chapter-style sections: start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
@@ -795,7 +847,15 @@ function nunlab_save_tool_details_meta( $post_id ) {
 			continue;
 		}
 
-		$value = 'url' === $field['type'] ? esc_url_raw( wp_unslash( $_POST[ $meta_key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $meta_key ] ) );
+		$value = sanitize_text_field( wp_unslash( $_POST[ $meta_key ] ) );
+
+		if ( 'url' === $field['type'] ) {
+			$value = esc_url_raw( wp_unslash( $_POST[ $meta_key ] ) );
+		}
+
+		if ( 'textarea' === $field['type'] ) {
+			$value = sanitize_textarea_field( wp_unslash( $_POST[ $meta_key ] ) );
+		}
 
 		if ( '' === trim( $value ) ) {
 			delete_post_meta( $post_id, $meta_key );
@@ -804,6 +864,12 @@ function nunlab_save_tool_details_meta( $post_id ) {
 
 		update_post_meta( $post_id, $meta_key, $value );
 	}
+
+	update_post_meta(
+		$post_id,
+		'nunlab_tool_youtube_custom_controls',
+		isset( $_POST['nunlab_tool_youtube_custom_controls'] ) ? 1 : 0
+	);
 }
 add_action( 'save_post_tool', 'nunlab_save_tool_details_meta' );
 

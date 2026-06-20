@@ -522,20 +522,86 @@ function nunlab_get_youtube_poster_url( $video_id ) {
 }
 
 /**
+ * Parse timestamp/title lines into player chapter data.
+ *
+ * Supports both line-separated and compact YouTube-style chapter text, e.g.
+ * "0:00 Introduction 0:16 Installation".
+ *
+ * @param string $text Raw chapter text.
+ * @return array<int, array{start:float,title:string}>
+ */
+function nunlab_parse_video_chapters( $text ) {
+	$text = trim( (string) $text );
+
+	if ( '' === $text ) {
+		return array();
+	}
+
+	if ( ! preg_match_all( '/(?<!\d)(\d{1,2}:(?:\d{2}:)?\d{2})(?![\d,.])/', $text, $matches, PREG_OFFSET_CAPTURE ) ) {
+		return array();
+	}
+
+	$chapters = array();
+	$count    = count( $matches[1] );
+
+	for ( $index = 0; $index < $count; $index++ ) {
+		$timecode         = $matches[1][ $index ][0];
+		$title_start      = $matches[1][ $index ][1] + strlen( $timecode );
+		$next_start       = isset( $matches[1][ $index + 1 ] ) ? $matches[1][ $index + 1 ][1] : strlen( $text );
+		$title            = substr( $text, $title_start, $next_start - $title_start );
+		$title            = trim( (string) preg_replace( '/^[\s\-–—|:]+/', '', $title ) );
+		$timecode_parts   = array_map( 'floatval', explode( ':', $timecode ) );
+		$timecode_seconds = 0.0;
+
+		if ( 3 === count( $timecode_parts ) ) {
+			$timecode_seconds = ( $timecode_parts[0] * 3600 ) + ( $timecode_parts[1] * 60 ) + $timecode_parts[2];
+		} elseif ( 2 === count( $timecode_parts ) ) {
+			$timecode_seconds = ( $timecode_parts[0] * 60 ) + $timecode_parts[1];
+		}
+
+		if ( '' === $title || ! is_finite( $timecode_seconds ) ) {
+			continue;
+		}
+
+		$chapters[] = array(
+			'start' => $timecode_seconds,
+			'title' => sanitize_text_field( $title ),
+		);
+	}
+
+	usort(
+		$chapters,
+		static function ( $first, $second ) {
+			return $first['start'] <=> $second['start'];
+		}
+	);
+
+	return $chapters;
+}
+
+/**
  * Return public external links for a plugin/tool entry.
  *
  * @param int $post_id Tool post ID.
  * @return array<int, array{label:string, url:string}>
  */
 function nunlab_get_tool_links( $post_id = 0 ) {
-	$post_id = $post_id ? (int) $post_id : get_the_ID();
-	$fields  = array(
+	$post_id         = $post_id ? (int) $post_id : get_the_ID();
+	$walkthrough_url = esc_url_raw( (string) get_post_meta( $post_id, 'nunlab_tool_walkthrough_url', true ) );
+	$fields          = array(
 		'nunlab_tool_github_url'     => __( 'GitHub', 'nunlab-theme' ),
 		'nunlab_tool_food4rhino_url' => __( 'Food4Rhino', 'nunlab-theme' ),
 		'nunlab_tool_docs_url'       => __( 'Documentation', 'nunlab-theme' ),
 		'nunlab_tool_release_url'    => __( 'Latest Release', 'nunlab-theme' ),
 	);
-	$links   = array();
+	$links           = array();
+
+	if ( '' !== $walkthrough_url ) {
+		$links[] = array(
+			'label' => __( 'YouTube', 'nunlab-theme' ),
+			'url'   => $walkthrough_url,
+		);
+	}
 
 	foreach ( $fields as $meta_key => $label ) {
 		$url = esc_url_raw( (string) get_post_meta( $post_id, $meta_key, true ) );

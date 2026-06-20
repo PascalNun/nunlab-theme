@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 $walkthrough_url   = esc_url_raw( (string) get_post_meta( get_the_ID(), 'nunlab_tool_walkthrough_url', true ) );
 $walkthrough_id    = nunlab_get_youtube_video_id( $walkthrough_url );
 $walkthrough_embed = $walkthrough_id ? nunlab_get_youtube_embed_url( $walkthrough_id, false ) : '';
+$use_custom_youtube_controls = (bool) get_post_meta( get_the_ID(), 'nunlab_tool_youtube_custom_controls', true );
+$walkthrough_chapters = nunlab_parse_video_chapters( (string) get_post_meta( get_the_ID(), 'nunlab_tool_walkthrough_chapters', true ) );
 $tool_icon_url     = esc_url_raw( (string) get_post_meta( get_the_ID(), 'nunlab_tool_icon_url', true ) );
 $tool_links        = nunlab_get_tool_links( get_the_ID() );
 $tool_sections     = nunlab_get_tool_content_sections( get_the_content( null, false ) );
@@ -34,18 +36,29 @@ $chapter_content   = nunlab_render_tool_chapters( $tool_sections );
 
 	<?php if ( '' !== $walkthrough_embed ) : ?>
 		<section class="tool-walkthrough" aria-label="<?php esc_attr_e( 'Walkthrough video', 'nunlab-theme' ); ?>">
-			<div class="tool-walkthrough__frame">
-				<button
-					class="tool-walkthrough__load"
-					type="button"
-					data-tool-youtube-src="<?php echo esc_url( $walkthrough_embed ); ?>"
-					data-tool-youtube-title="<?php echo esc_attr( sprintf( __( '%s walkthrough video', 'nunlab-theme' ), get_the_title() ) ); ?>"
-				>
+			<div
+				class="tool-walkthrough__frame nunlab-player nunlab-player--youtube<?php echo $use_custom_youtube_controls ? ' nunlab-player--youtube-custom' : ''; ?>"
+				data-tool-youtube-frame
+				data-tool-youtube-id="<?php echo esc_attr( $walkthrough_id ); ?>"
+				data-tool-youtube-src="<?php echo esc_url( $walkthrough_embed ); ?>"
+				data-tool-youtube-title="<?php echo esc_attr( sprintf( __( '%s walkthrough video', 'nunlab-theme' ), get_the_title() ) ); ?>"
+				<?php echo $use_custom_youtube_controls ? 'data-tool-youtube-custom-controls="true"' : ''; ?>
+			>
+				<?php if ( $walkthrough_chapters ) : ?>
+					<script type="application/json" data-tool-youtube-chapters><?php echo wp_json_encode( $walkthrough_chapters, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?></script>
+				<?php endif; ?>
+				<div class="tool-walkthrough__load nunlab-player__surface" aria-hidden="true">
 					<?php if ( has_post_thumbnail() ) : ?>
-						<?php the_post_thumbnail( 'nunlab-project-large', array( 'class' => 'tool-walkthrough__poster' ) ); ?>
+						<?php the_post_thumbnail( 'nunlab-project-large', array( 'class' => 'tool-walkthrough__poster nunlab-player__poster' ) ); ?>
 					<?php endif; ?>
-					<span class="tool-walkthrough__play" aria-hidden="true"></span>
-					<span class="tool-walkthrough__label"><?php esc_html_e( 'Play walkthrough video', 'nunlab-theme' ); ?></span>
+				</div>
+				<button
+					class="tool-walkthrough__hit nunlab-player__poster-play"
+					type="button"
+					data-tool-youtube-play
+					aria-label="<?php esc_attr_e( 'Play walkthrough video', 'nunlab-theme' ); ?>"
+				>
+					<span class="tool-walkthrough__label nunlab-player__label"><?php esc_html_e( 'Play walkthrough video', 'nunlab-theme' ); ?></span>
 				</button>
 				<noscript>
 					<p class="tool-walkthrough__noscript">
