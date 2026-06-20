@@ -98,6 +98,83 @@ function nunlab_tune_search_queries( $query ) {
 add_action( 'pre_get_posts', 'nunlab_tune_search_queries' );
 
 /**
+ * Show the manual project order in the admin list.
+ *
+ * The public work sections already read this native menu_order value, so this
+ * column makes the front-end sequence visible while editing.
+ *
+ * @param array<string, string> $columns Admin list columns.
+ * @return array<string, string>
+ */
+function nunlab_project_admin_columns( $columns ) {
+	$ordered_columns = array();
+
+	foreach ( $columns as $key => $label ) {
+		$ordered_columns[ $key ] = $label;
+
+		if ( 'title' === $key ) {
+			$ordered_columns['menu_order'] = __( 'Order', 'nunlab-theme' );
+		}
+	}
+
+	return $ordered_columns;
+}
+add_filter( 'manage_project_posts_columns', 'nunlab_project_admin_columns' );
+
+/**
+ * Render custom project admin column values.
+ *
+ * @param string $column  Column key.
+ * @param int    $post_id Project post ID.
+ */
+function nunlab_project_admin_column_content( $column, $post_id ) {
+	if ( 'menu_order' !== $column ) {
+		return;
+	}
+
+	echo esc_html( (string) (int) get_post_field( 'menu_order', $post_id ) );
+}
+add_action( 'manage_project_posts_custom_column', 'nunlab_project_admin_column_content', 10, 2 );
+
+/**
+ * Allow the manual order column to be sorted in the project admin list.
+ *
+ * @param array<string, string> $columns Sortable admin columns.
+ * @return array<string, string>
+ */
+function nunlab_project_sortable_admin_columns( $columns ) {
+	$columns['menu_order'] = 'menu_order';
+
+	return $columns;
+}
+add_filter( 'manage_edit-project_sortable_columns', 'nunlab_project_sortable_admin_columns' );
+
+/**
+ * Show projects by manual order by default in the WordPress admin.
+ *
+ * @param WP_Query $query Admin query instance.
+ */
+function nunlab_default_project_admin_order( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'project' !== $query->get( 'post_type' ) ) {
+		return;
+	}
+
+	if ( $query->get( 'orderby' ) || $query->get( 's' ) ) {
+		return;
+	}
+
+	$query->set(
+		'orderby',
+		array(
+			'menu_order' => 'ASC',
+			'title'      => 'ASC',
+		)
+	);
+	$query->set( 'order', 'ASC' );
+}
+add_action( 'pre_get_posts', 'nunlab_default_project_admin_order' );
+
+/**
  * Use native emoji rendering and skip WordPress' visitor-side emoji helper.
  */
 function nunlab_disable_front_end_emoji_assets() {

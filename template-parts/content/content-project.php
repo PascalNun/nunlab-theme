@@ -14,6 +14,7 @@ $project_terms  = get_the_terms( get_the_ID(), 'project_type' );
 $eyebrow        = __( 'Project', 'nunlab-theme' );
 $title_parts    = nunlab_get_project_presentation_title_parts( get_the_ID() );
 $detail_content = nunlab_render_project_editorial_content( get_the_content( null, false ) );
+$project_meta   = nunlab_render_project_meta_list( get_the_ID(), 'entry-project-meta' );
 
 if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 	$eyebrow = implode( ' / ', wp_list_pluck( $project_terms, 'name' ) );
@@ -28,6 +29,8 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 		<?php if ( has_excerpt() ) : ?>
 			<p class="entry-lead"><?php echo esc_html( get_the_excerpt() ); ?></p>
 		<?php endif; ?>
+
+		<?php echo $project_meta; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</header>
 
 	<?php if ( $media_items ) : ?>

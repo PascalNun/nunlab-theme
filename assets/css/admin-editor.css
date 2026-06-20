@@ -86,8 +86,28 @@
 	margin: 0;
 }
 
+.nunlab-admin-meta-list {
+	display: grid;
+	gap: 0.85rem;
+}
+
+.nunlab-admin-meta-row {
+	display: grid;
+	grid-template-columns: minmax(9rem, 0.36fr) minmax(0, 1fr);
+	gap: 0.75rem;
+	align-items: start;
+	padding: 0.85rem;
+	border: 1px solid #dcdcde;
+	border-radius: 10px;
+	background: #fff;
+}
+
 @media (max-width: 782px) {
 	.nunlab-admin-media__item {
+		grid-template-columns: 1fr;
+	}
+
+	.nunlab-admin-meta-row {
 		grid-template-columns: 1fr;
 	}
 

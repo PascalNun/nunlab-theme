@@ -86,6 +86,49 @@ function nunlab_sanitize_project_media_items( $value ) {
 }
 
 /**
+ * Sanitize the flexible project metadata rows.
+ *
+ * @param mixed $value Raw submitted value.
+ * @return array<int, array{label:string,value:string}>
+ */
+function nunlab_sanitize_project_meta_items( $value ) {
+	if ( is_string( $value ) ) {
+		$decoded = json_decode( wp_unslash( $value ), true );
+		$value   = JSON_ERROR_NONE === json_last_error() ? $decoded : array();
+	}
+
+	if ( ! is_array( $value ) ) {
+		return array();
+	}
+
+	$items = array();
+
+	foreach ( $value as $item ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+
+		$label = isset( $item['label'] ) ? sanitize_text_field( (string) $item['label'] ) : '';
+		$text  = isset( $item['value'] ) ? sanitize_textarea_field( (string) $item['value'] ) : '';
+
+		if ( '' === trim( $label ) || '' === trim( $text ) ) {
+			continue;
+		}
+
+		$items[] = array(
+			'label' => $label,
+			'value' => $text,
+		);
+
+		if ( count( $items ) >= 10 ) {
+			break;
+		}
+	}
+
+	return $items;
+}
+
+/**
  * Return enriched media items for the admin editor UI.
  *
  * @param int $post_id Project post ID.
@@ -219,6 +262,28 @@ function nunlab_register_theme_meta() {
 		)
 	);
 
+	register_post_meta(
+		'project',
+		'nunlab_project_meta_items',
+		array(
+			'type'              => 'array',
+			'single'            => true,
+			'sanitize_callback' => 'nunlab_sanitize_project_meta_items',
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'label' => array( 'type' => 'string' ),
+							'value' => array( 'type' => 'string' ),
+						),
+					),
+				),
+			),
+		)
+	);
+
 	foreach ( nunlab_get_tool_detail_fields() as $meta_key => $field ) {
 		register_post_meta(
 			'tool',
@@ -268,6 +333,15 @@ function nunlab_add_project_meta_boxes() {
 		'nunlab_render_project_presentation_meta_box',
 		'project',
 		'side',
+		'default'
+	);
+
+	add_meta_box(
+		'nunlab-project-meta',
+		esc_html__( 'Project Metadata', 'nunlab-theme' ),
+		'nunlab_render_project_meta_box',
+		'project',
+		'normal',
 		'default'
 	);
 
@@ -340,6 +414,55 @@ function nunlab_render_project_presentation_meta_box( $post ) {
 		<p class="description">
 			<?php esc_html_e( 'The project excerpt is used as the expanded subheadline below the title.', 'nunlab-theme' ); ?>
 		</p>
+	</div>
+	<?php
+}
+
+/**
+ * Render the flexible project metadata meta box.
+ *
+ * @param WP_Post $post Current project.
+ */
+function nunlab_render_project_meta_box( $post ) {
+	$items = nunlab_get_project_meta_items( $post->ID );
+
+	wp_nonce_field( 'nunlab_save_project_meta', 'nunlab_project_meta_nonce' );
+	?>
+	<div class="nunlab-admin-fields">
+		<p class="description">
+			<?php esc_html_e( 'Add up to ten short facts such as Type, Program, Location, Year, Role, or Scope. Empty rows are ignored.', 'nunlab-theme' ); ?>
+		</p>
+
+		<div class="nunlab-admin-meta-list">
+			<?php for ( $index = 0; $index < 10; $index++ ) : ?>
+				<?php
+				$item  = isset( $items[ $index ] ) ? $items[ $index ] : array( 'label' => '', 'value' => '' );
+				$label = isset( $item['label'] ) ? (string) $item['label'] : '';
+				$value = isset( $item['value'] ) ? (string) $item['value'] : '';
+				?>
+				<div class="nunlab-admin-meta-row">
+					<label class="nunlab-admin-media__field">
+						<span class="nunlab-admin-media__field-label"><?php esc_html_e( 'Label', 'nunlab-theme' ); ?></span>
+						<input
+							name="nunlab_project_meta_labels[]"
+							type="text"
+							class="widefat"
+							value="<?php echo esc_attr( $label ); ?>"
+							placeholder="<?php esc_attr_e( 'Type', 'nunlab-theme' ); ?>"
+						/>
+					</label>
+					<label class="nunlab-admin-media__field">
+						<span class="nunlab-admin-media__field-label"><?php esc_html_e( 'Value', 'nunlab-theme' ); ?></span>
+						<textarea
+							name="nunlab_project_meta_values[]"
+							class="widefat"
+							rows="2"
+							placeholder="<?php esc_attr_e( 'Concept study', 'nunlab-theme' ); ?>"
+						><?php echo esc_textarea( $value ); ?></textarea>
+					</label>
+				</div>
+			<?php endfor; ?>
+		</div>
 	</div>
 	<?php
 }
@@ -602,6 +725,51 @@ function nunlab_save_project_presentation_meta( $post_id ) {
 	}
 }
 add_action( 'save_post_project', 'nunlab_save_project_presentation_meta' );
+
+/**
+ * Save project metadata rows.
+ *
+ * @param int $post_id Post ID.
+ */
+function nunlab_save_project_meta_items_meta( $post_id ) {
+	if ( ! isset( $_POST['nunlab_project_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nunlab_project_meta_nonce'] ) ), 'nunlab_save_project_meta' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	$labels = isset( $_POST['nunlab_project_meta_labels'] ) ? wp_unslash( $_POST['nunlab_project_meta_labels'] ) : array();
+	$values = isset( $_POST['nunlab_project_meta_values'] ) ? wp_unslash( $_POST['nunlab_project_meta_values'] ) : array();
+
+	if ( ! is_array( $labels ) || ! is_array( $values ) ) {
+		delete_post_meta( $post_id, 'nunlab_project_meta_items' );
+		return;
+	}
+
+	$raw_items = array();
+
+	for ( $index = 0; $index < 10; $index++ ) {
+		$raw_items[] = array(
+			'label' => isset( $labels[ $index ] ) ? (string) $labels[ $index ] : '',
+			'value' => isset( $values[ $index ] ) ? (string) $values[ $index ] : '',
+		);
+	}
+
+	$items = nunlab_sanitize_project_meta_items( $raw_items );
+
+	if ( $items ) {
+		update_post_meta( $post_id, 'nunlab_project_meta_items', $items );
+	} else {
+		delete_post_meta( $post_id, 'nunlab_project_meta_items' );
+	}
+}
+add_action( 'save_post_project', 'nunlab_save_project_meta_items_meta' );
 
 /**
  * Save plugin/tool detail meta.

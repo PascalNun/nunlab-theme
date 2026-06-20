@@ -90,6 +90,74 @@ function nunlab_get_project_presentation_title_markup( $title_parts, $base_class
 }
 
 /**
+ * Return public project metadata rows.
+ *
+ * @param int $post_id Project post ID.
+ * @return array<int, array{label:string,value:string}>
+ */
+function nunlab_get_project_meta_items( $post_id = 0 ) {
+	$post_id = $post_id ? (int) $post_id : get_the_ID();
+	$value   = get_post_meta( $post_id, 'nunlab_project_meta_items', true );
+
+	if ( ! is_array( $value ) ) {
+		return array();
+	}
+
+	$items = array();
+
+	foreach ( $value as $item ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+
+		$label = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
+		$text  = isset( $item['value'] ) ? trim( (string) $item['value'] ) : '';
+
+		if ( '' === $label || '' === $text ) {
+			continue;
+		}
+
+		$items[] = array(
+			'label' => $label,
+			'value' => $text,
+		);
+	}
+
+	return $items;
+}
+
+/**
+ * Render project metadata as a compact definition list.
+ *
+ * @param int    $post_id     Project post ID.
+ * @param string $extra_class Optional extra class for context-specific spacing.
+ * @return string
+ */
+function nunlab_render_project_meta_list( $post_id = 0, $extra_class = '' ) {
+	$items = nunlab_get_project_meta_items( $post_id );
+
+	if ( empty( $items ) ) {
+		return '';
+	}
+
+	$classes = trim( 'project-meta ' . (string) $extra_class );
+
+	ob_start();
+	?>
+	<dl class="<?php echo esc_attr( $classes ); ?>">
+		<?php foreach ( $items as $item ) : ?>
+			<div class="project-meta__item">
+				<dt class="project-meta__label"><?php echo esc_html( $item['label'] ); ?></dt>
+				<dd class="project-meta__value"><?php echo nl2br( esc_html( $item['value'] ) ); ?></dd>
+			</div>
+		<?php endforeach; ?>
+	</dl>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
  * Return compact public metadata for plugin/tool cards and pages.
  *
  * @param int  $post_id      Tool post ID.

@@ -15,6 +15,7 @@ $detail_content     = nunlab_render_project_editorial_content( get_the_content( 
 $title_parts        = nunlab_get_project_presentation_title_parts( get_the_ID() );
 $presentation_title = $title_parts['text'];
 $subtitle           = $project_excerpt;
+$project_meta       = nunlab_render_project_meta_list( get_the_ID(), 'project-card__meta' );
 
 if ( '' === $detail_content ) {
 	$detail_content = '<div class="project-card__expand-fallback"><p>' . esc_html( $summary ) . '</p></div>';
@@ -51,9 +52,7 @@ $media_payload      = array_map(
 			data-work-media="<?php echo esc_attr( wp_json_encode( $media_payload ) ); ?>"
 		>
 			<div class="project-card__media">
-				<?php if ( has_post_thumbnail() ) : ?>
-					<?php the_post_thumbnail( 'nunlab-project-large', array( 'class' => 'project-card__image', 'data-work-image-current' => '' ) ); ?>
-				<?php elseif ( $image_url ) : ?>
+				<?php if ( $image_url ) : ?>
 					<img class="project-card__image" src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ? $image_alt : get_the_title() ); ?>" data-work-image-current />
 				<?php else : ?>
 					<span class="project-card__placeholder" data-work-placeholder-current></span>
@@ -92,6 +91,9 @@ $media_payload      = array_map(
 			<button class="project-card__expand-arrow" type="button" data-work-next>
 				<?php esc_html_e( 'Next', 'nunlab-theme' ); ?>
 			</button>
+			<button class="project-card__expand-close" type="button" data-work-close aria-label="<?php esc_attr_e( 'Close project', 'nunlab-theme' ); ?>">
+				<span aria-hidden="true"></span>
+			</button>
 		</div>
 	</div>
 
@@ -104,6 +106,8 @@ $media_payload      = array_map(
 			<?php if ( $subtitle ) : ?>
 				<p class="project-card__expand-subtitle"><?php echo esc_html( $subtitle ); ?></p>
 			<?php endif; ?>
+
+			<?php echo $project_meta; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 			<div class="project-card__expand-content">
 				<?php echo $detail_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
