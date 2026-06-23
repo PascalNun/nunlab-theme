@@ -15,6 +15,7 @@ $eyebrow        = __( 'Project', 'nunlab-theme' );
 $title_parts    = nunlab_get_project_presentation_title_parts( get_the_ID() );
 $detail_content = nunlab_render_project_editorial_content( get_the_content( null, false ) );
 $project_meta   = nunlab_render_project_meta_list( get_the_ID(), 'entry-project-meta' );
+$first_caption  = isset( $media_items[0]['caption'] ) ? (string) $media_items[0]['caption'] : '';
 
 if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 	$eyebrow = implode( ' / ', wp_list_pluck( $project_terms, 'name' ) );
@@ -37,18 +38,43 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 		<section class="project-gallery" data-project-gallery>
 			<div class="project-gallery__viewport" data-project-gallery-viewport>
 				<?php foreach ( $media_items as $index => $media_item ) : ?>
+					<?php
+						$is_youtube_slide      = 'youtube' === $media_item['type'];
+						$is_native_video_slide = 'video' === $media_item['type'];
+						$is_video_slide        = $is_youtube_slide || $is_native_video_slide;
+						$media_caption         = isset( $media_item['caption'] ) ? (string) $media_item['caption'] : '';
+						?>
 					<figure
-						class="project-gallery__slide<?php echo 'youtube' === $media_item['type'] ? ' project-gallery__slide--video' : ''; ?>"
+						class="project-gallery__slide<?php echo $is_video_slide ? ' project-gallery__slide--video' : ''; ?><?php echo $is_native_video_slide ? ' project-gallery__slide--native-video' : ''; ?>"
 						<?php echo 0 === $index ? '' : ' hidden'; ?>
 						data-project-gallery-slide
 						data-project-gallery-title="<?php the_title_attribute(); ?>"
-					>
-						<?php if ( 'youtube' === $media_item['type'] ) : ?>
-							<img
-								class="project-gallery__image"
-								src="<?php echo esc_url( (string) $media_item['poster_url'] ); ?>"
-								alt="<?php echo esc_attr( (string) ( $media_item['alt'] ? $media_item['alt'] : get_the_title() ) ); ?>"
-							/>
+						data-project-gallery-caption="<?php echo esc_attr( $media_caption ); ?>"
+						>
+							<?php if ( $is_native_video_slide ) : ?>
+								<div class="project-gallery__video-frame project-gallery__video-frame--native" data-project-gallery-video-frame>
+									<video
+										class="project-gallery__native-video"
+										controls
+										preload="metadata"
+										playsinline
+										<?php echo ! empty( $media_item['poster_url'] ) ? 'poster="' . esc_url( (string) $media_item['poster_url'] ) . '"' : ''; ?>
+										data-nunlab-player
+									>
+									<source
+										src="<?php echo esc_url( isset( $media_item['video_url'] ) ? (string) $media_item['video_url'] : '' ); ?>"
+										type="<?php echo esc_attr( isset( $media_item['mime_type'] ) ? (string) $media_item['mime_type'] : '' ); ?>"
+									/>
+								</video>
+							</div>
+						<?php elseif ( $is_youtube_slide ) : ?>
+							<?php if ( ! empty( $media_item['poster_url'] ) ) : ?>
+								<img
+									class="project-gallery__image"
+									src="<?php echo esc_url( (string) $media_item['poster_url'] ); ?>"
+									alt="<?php echo esc_attr( (string) ( $media_item['alt'] ? $media_item['alt'] : get_the_title() ) ); ?>"
+								/>
+							<?php endif; ?>
 							<div class="project-gallery__video-frame" hidden data-project-gallery-video-frame></div>
 							<button
 								class="project-gallery__video-play"
@@ -75,15 +101,20 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 					<button class="project-gallery__button" type="button" data-project-gallery-prev>
 						<?php esc_html_e( 'Previous', 'nunlab-theme' ); ?>
 					</button>
-					<p class="project-gallery__counter" data-project-gallery-counter>
-						<?php
-						printf(
-							/* translators: %d is the number of gallery images. */
-							esc_html__( '1 / %d', 'nunlab-theme' ),
-							count( $media_items )
-						);
-						?>
-					</p>
+					<div class="project-gallery__status">
+						<p class="project-gallery__title" data-project-gallery-caption-display <?php echo '' === $first_caption ? 'hidden' : ''; ?>>
+							<?php echo esc_html( $first_caption ); ?>
+						</p>
+						<p class="project-gallery__counter" data-project-gallery-counter>
+							<?php
+							printf(
+								/* translators: %d is the number of gallery images. */
+								esc_html__( '1 / %d', 'nunlab-theme' ),
+								count( $media_items )
+							);
+							?>
+						</p>
+					</div>
 					<button class="project-gallery__button" type="button" data-project-gallery-next>
 						<?php esc_html_e( 'Next', 'nunlab-theme' ); ?>
 					</button>

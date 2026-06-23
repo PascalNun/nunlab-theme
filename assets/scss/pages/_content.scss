@@ -299,6 +299,35 @@
 	color: $color-surface;
 }
 
+body.has-nunlab-player-expanded {
+	overflow: hidden;
+}
+
+body.has-nunlab-player-expanded .nunlab-player.is-pseudo-fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	inline-size: 100vw;
+	block-size: 100dvh;
+	width: 100vw;
+	height: 100dvh;
+	max-inline-size: none;
+	max-width: none;
+	max-block-size: none;
+	max-height: none;
+	margin: 0;
+	aspect-ratio: auto;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+@supports not (block-size: 100dvh) {
+	body.has-nunlab-player-expanded .nunlab-player.is-pseudo-fullscreen {
+		block-size: 100vh;
+		height: 100vh;
+	}
+}
+
 .nunlab-player iframe,
 .nunlab-player__surface,
 .nunlab-player__poster,
@@ -361,6 +390,14 @@
 	object-fit: cover;
 }
 
+.nunlab-player__poster {
+	z-index: 1;
+	pointer-events: none;
+	transition:
+		opacity $transition-default,
+		visibility $transition-default;
+}
+
 .nunlab-player__video {
 	background: #101010;
 	object-fit: contain;
@@ -399,12 +436,25 @@
 	text-align: center;
 }
 
+.nunlab-player.is-pseudo-fullscreen .nunlab-player__captions {
+	inset-inline-start: max(1rem, env(safe-area-inset-left));
+	inset-inline-end: max(1rem, env(safe-area-inset-right));
+}
+
 .nunlab-player--native.has-started:is(:hover, :focus-within, .has-speed-menu-open, .has-volume-menu-open) .nunlab-player__captions {
+	inset-block-end: clamp(5.6rem, 10vw, 8rem);
+}
+
+.nunlab-player--youtube-custom.nunlab-player--loaded:is(:hover, :focus-within, .has-speed-menu-open, .has-volume-menu-open) .nunlab-player__captions {
 	inset-block-end: clamp(5.6rem, 10vw, 8rem);
 }
 
 @media (hover: none), (pointer: coarse) {
 	.nunlab-player--native.has-started .nunlab-player__captions {
+		inset-block-end: clamp(5.6rem, 10vw, 8rem);
+	}
+
+	.nunlab-player--youtube-custom.nunlab-player--loaded .nunlab-player__captions {
 		inset-block-end: clamp(5.6rem, 10vw, 8rem);
 	}
 }
@@ -467,6 +517,11 @@
 	visibility: hidden;
 }
 
+.nunlab-player--native.has-started .nunlab-player__poster {
+	opacity: 0;
+	visibility: hidden;
+}
+
 .nunlab-player__chrome {
 	position: absolute;
 	inset-inline: 0;
@@ -482,7 +537,13 @@
 	transition:
 		opacity $transition-smooth,
 		transform $transition-smooth,
-		visibility $transition-smooth;
+	visibility $transition-smooth;
+}
+
+.nunlab-player.is-pseudo-fullscreen .nunlab-player__chrome {
+	padding-inline-start: max(clamp(1.1rem, 3.3vw, 2.85rem), env(safe-area-inset-left));
+	padding-inline-end: max(clamp(1.1rem, 3.3vw, 2.85rem), env(safe-area-inset-right));
+	padding-block-end: max(clamp(0.88rem, 2.1vw, 1.82rem), env(safe-area-inset-bottom));
 }
 
 .nunlab-player--native .nunlab-player__chrome {
@@ -728,7 +789,26 @@
 	block-size: clamp(4.2rem, 6.8vw, 5.9rem);
 	padding: 0;
 	background: transparent;
+	opacity: 0;
+	pointer-events: none;
 	transform: translateX(-50%);
+	transition:
+		opacity $transition-default,
+		visibility $transition-default;
+	visibility: hidden;
+}
+
+.nunlab-player__tool--sound:is(:hover, :focus-within) .nunlab-player__volume-panel,
+.nunlab-player.has-volume-menu-open .nunlab-player__volume-panel {
+	opacity: 1;
+	pointer-events: auto;
+	visibility: visible;
+}
+
+@media (hover: none), (pointer: coarse) {
+	.nunlab-player__volume-panel {
+		display: none;
+	}
 }
 
 .nunlab-player__volume-panel::before,
@@ -781,7 +861,6 @@
 	background: transparent;
 }
 
-.nunlab-player__volume-panel[hidden],
 .nunlab-player__speed-menu[hidden] {
 	display: none;
 }
@@ -1268,11 +1347,16 @@ body.has-tool-image-viewer {
 	column-gap: 0;
 }
 
-.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block {
+.entry-content--project-editorial .editorial-flow--continuous :is(.editorial-flow__block, .editorial-flow__group) {
 	margin: 0;
 }
 
-.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block + .editorial-flow__block {
+.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__group {
+	break-inside: avoid-column;
+	-webkit-column-break-inside: avoid;
+}
+
+.entry-content--project-editorial .editorial-flow--continuous > :is(.editorial-flow__block, .editorial-flow__group) + :is(.editorial-flow__block, .editorial-flow__group) {
 	margin-top: clamp(1rem, 2vw, 1.35rem);
 }
 
@@ -1280,7 +1364,8 @@ body.has-tool-image-viewer {
 	margin-top: clamp(2rem, 4vw, 3rem);
 }
 
-.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block--heading:first-child {
+.entry-content--project-editorial .editorial-flow--continuous > .editorial-flow__block--heading:first-child,
+.entry-content--project-editorial .editorial-flow--continuous > .editorial-flow__group:first-child > .editorial-flow__block--heading:first-child {
 	margin-top: clamp(1.25rem, 2.5vw, 1.8rem);
 }
 
@@ -1290,6 +1375,16 @@ body.has-tool-image-viewer {
 	line-height: 1.08;
 	letter-spacing: -0.03em;
 	font-weight: $font-weight-semibold;
+}
+
+.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block--heading-compact {
+	margin-top: clamp(1.45rem, 3vw, 2.15rem);
+}
+
+.entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block--heading-compact :is(h2, h3, h4, h5, h6) {
+	font-size: clamp(1rem, 1.35vw, 1.18rem);
+	line-height: 1.16;
+	letter-spacing: 0;
 }
 
 .entry-content--project-editorial .editorial-flow--continuous .editorial-flow__block--body :is(p, ul, ol, blockquote) {
@@ -1514,8 +1609,16 @@ body.has-tool-image-viewer {
 		inset-block-end: clamp(4.35rem, 16vw, 5.7rem);
 	}
 
+	.nunlab-player--youtube-custom.nunlab-player--loaded:is(:hover, :focus-within, .has-speed-menu-open, .has-volume-menu-open) .nunlab-player__captions {
+		inset-block-end: clamp(4.35rem, 16vw, 5.7rem);
+	}
+
 	@media (hover: none), (pointer: coarse) {
 		.nunlab-player--native.has-started .nunlab-player__captions {
+			inset-block-end: clamp(4.35rem, 16vw, 5.7rem);
+		}
+
+		.nunlab-player--youtube-custom.nunlab-player--loaded .nunlab-player__captions {
 			inset-block-end: clamp(4.35rem, 16vw, 5.7rem);
 		}
 	}
@@ -1547,7 +1650,6 @@ body.has-tool-image-viewer {
 		block-size: 1rem;
 	}
 
-	.nunlab-player__button--subtitles,
 	.nunlab-player__tool--speed {
 		display: none;
 	}

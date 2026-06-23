@@ -353,11 +353,13 @@
 		controls.timelineGroup = document.createElement('span');
 		controls.timeDisplay = document.createElement('span');
 		controls.tools = document.createElement('div');
+		controls.captionOverlay = document.createElement('div');
 		controls.volumePanel = document.createElement('div');
 		controls.volumeRange = document.createElement('input');
 		controls.speedMenu = document.createElement('div');
 		controls.playButton = createPlayerButton('play', 'Play video');
-		controls.soundButton = createPlayerButton('sound', 'Open volume controls');
+		controls.soundButton = createPlayerButton('sound', 'Mute video');
+		controls.subtitlesButton = createPlayerButton('subtitles', 'Toggle captions');
 		controls.speedButton = createPlayerButton('speed', 'Playback speed');
 		controls.fullscreenButton = createPlayerButton('fullscreen', 'Enter fullscreen');
 		controls.timeline = createPlayerTimeline();
@@ -370,8 +372,9 @@
 		controls.timeDisplay.className = 'nunlab-player__time';
 		controls.timeDisplay.textContent = '0:00 / 0:00';
 		controls.tools.className = 'nunlab-player__tools';
+		controls.captionOverlay.className = 'nunlab-player__captions';
+		controls.captionOverlay.setAttribute('aria-hidden', 'true');
 		controls.volumePanel.className = 'nunlab-player__volume-panel';
-		controls.volumePanel.hidden = true;
 		controls.volumeRange.type = 'range';
 		controls.volumeRange.min = '0';
 		controls.volumeRange.max = '1';
@@ -380,7 +383,7 @@
 		controls.volumeRange.setAttribute('aria-label', 'Volume');
 		controls.speedMenu.className = 'nunlab-player__speed-menu';
 		controls.speedMenu.hidden = true;
-		controls.soundButton.setAttribute('aria-expanded', 'false');
+		controls.subtitlesButton.setAttribute('aria-pressed', 'false');
 		controls.speedButton.setAttribute('aria-expanded', 'false');
 
 		[2, 1.5, 1.25, 1].forEach(function (rate) {
@@ -396,6 +399,7 @@
 		controls.soundTool.appendChild(controls.volumePanel);
 		controls.speedTool.appendChild(controls.speedMenu);
 		controls.tools.appendChild(controls.soundTool);
+		controls.tools.appendChild(controls.subtitlesButton);
 		controls.tools.appendChild(controls.speedTool);
 		controls.tools.appendChild(controls.fullscreenButton);
 		controls.timelineGroup.appendChild(controls.timeline);
@@ -414,7 +418,7 @@
 		iframe.title = title;
 		iframe.loading = 'lazy';
 		iframe.allow =
-			'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+			'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
 		iframe.allowFullscreen = true;
 
 		return iframe;
@@ -458,6 +462,45 @@
 			})
 			.filter(function (chapter) {
 				return Number.isFinite(chapter.start) && chapter.start >= 0 && '' !== chapter.title;
+			})
+			.sort(function (first, second) {
+				return first.start - second.start;
+			});
+	};
+
+	var getYoutubeCaptions = function (frame) {
+		var captionData = frame.querySelector('[data-tool-youtube-captions]');
+		var captions = [];
+
+		if (!captionData || !captionData.textContent.trim()) {
+			return captions;
+		}
+
+		try {
+			captions = JSON.parse(captionData.textContent);
+		} catch (error) {
+			return [];
+		}
+
+		if (!Array.isArray(captions)) {
+			return [];
+		}
+
+		return captions
+			.map(function (cue) {
+				return {
+					start: Number(cue.start),
+					end: Number(cue.end),
+					text: cue.text ? String(cue.text).trim() : '',
+				};
+			})
+			.filter(function (cue) {
+				return (
+					Number.isFinite(cue.start) &&
+					Number.isFinite(cue.end) &&
+					cue.end > cue.start &&
+					'' !== cue.text
+				);
 			})
 			.sort(function (first, second) {
 				return first.start - second.start;
@@ -558,8 +601,13 @@
 			'has-started',
 			'is-playing',
 			'has-speed-menu-open',
-			'has-volume-menu-open'
+			'has-volume-menu-open',
+			'has-captions-on',
+			'has-captions-visible',
+			'is-fullscreen',
+			'is-pseudo-fullscreen'
 		);
+		document.body.classList.remove('has-nunlab-player-expanded');
 		frame.classList.add('nunlab-player--loaded');
 		frame.replaceChildren(iframe);
 		iframe.focus();
@@ -592,6 +640,13 @@
 		var syncTimer = 0;
 		var renderedDuration = 0;
 		var chapterCues = getYoutubeChapters(frame);
+		var captionCues = getYoutubeCaptions(frame);
+		var captionsEnabled = false;
+		var activeCaptionText = '';
+		var isPseudoFullscreen = false;
+		var fullscreenFallbackTimer = 0;
+		var initialPlayPending = true;
+		var lastVolume = 100;
 		var isPlayerReady = false;
 		var isPointerInsideFrame = false;
 
@@ -602,6 +657,7 @@
 		frame.dataset.toolYoutubeLoaded = 'true';
 		iframe = createYoutubeIframe(getYoutubeApiSrc(src, true), title);
 		iframe.id = 'nunlab-youtube-player-' + Math.random().toString(36).slice(2);
+		iframe.loading = 'eager';
 		controls = createCustomYoutubeControls();
 		hitArea = createYoutubeHitArea();
 
@@ -612,8 +668,6 @@
 		};
 
 		var closeVolumePanel = function () {
-			controls.volumePanel.hidden = true;
-			controls.soundButton.setAttribute('aria-expanded', 'false');
 			frame.classList.remove('has-volume-menu-open');
 		};
 
@@ -643,6 +697,63 @@
 			);
 		};
 
+		var updateCaptionOverlay = function () {
+			var currentTime = getPlayerCurrentTime();
+			var activeLines = [];
+			var nextCaptionText = '';
+
+			if (captionsEnabled && captionCues.length) {
+				captionCues.forEach(function (cue) {
+					if (currentTime >= cue.start && currentTime < cue.end) {
+						activeLines = activeLines.concat(cue.text.split(/\n+/));
+					}
+				});
+			}
+
+			nextCaptionText = activeLines
+				.map(function (line) {
+					return line.trim();
+				})
+				.filter(Boolean)
+				.join('\n');
+
+			if (nextCaptionText === activeCaptionText) {
+				frame.classList.toggle('has-captions-visible', '' !== nextCaptionText);
+				return;
+			}
+
+			activeCaptionText = nextCaptionText;
+			controls.captionOverlay.replaceChildren();
+
+			if ('' === nextCaptionText) {
+				frame.classList.remove('has-captions-visible');
+				return;
+			}
+
+			nextCaptionText
+				.split(/\n+/)
+				.forEach(function (line) {
+					var captionLine = document.createElement('span');
+
+					captionLine.className = 'nunlab-player__caption-line';
+					captionLine.textContent = line;
+					controls.captionOverlay.appendChild(captionLine);
+				});
+
+			frame.classList.add('has-captions-visible');
+		};
+
+		var setCaptionsEnabled = function (shouldEnable) {
+			captionsEnabled = Boolean(shouldEnable && captionCues.length);
+			frame.classList.toggle('has-captions-on', captionsEnabled);
+			controls.subtitlesButton.setAttribute('aria-pressed', captionsEnabled ? 'true' : 'false');
+			updateCaptionOverlay();
+		};
+
+		var toggleCaptions = function () {
+			setCaptionsEnabled(!captionsEnabled);
+		};
+
 		var syncTimelineSegments = function () {
 			var duration = getPlayerDuration();
 
@@ -663,11 +774,43 @@
 
 			if (isMuted) {
 				volume = 0;
+			} else if (volume > 0) {
+				lastVolume = Math.round(volume * 100);
 			}
 
 			frame.classList.toggle('is-muted', Boolean(isMuted));
 			frame.style.setProperty('--nunlab-player-volume', (volume * 100).toFixed(1) + '%');
 			controls.volumeRange.value = String(volume);
+			controls.soundButton.setAttribute('aria-label', isMuted ? 'Unmute video' : 'Mute video');
+		};
+
+		var toggleMute = function () {
+			var isMuted = player && 'function' === typeof player.isMuted && player.isMuted();
+			var volume =
+				player && 'function' === typeof player.getVolume
+					? Math.min(Math.max(Math.round(player.getVolume()), 0), 100)
+					: lastVolume;
+
+			closeSpeedMenu();
+
+			if (!player) {
+				return;
+			}
+
+			if (isMuted || 0 === volume) {
+				if (0 === volume && 'function' === typeof player.setVolume) {
+					player.setVolume(lastVolume || 100);
+				}
+
+				if ('function' === typeof player.unMute) {
+					player.unMute();
+				}
+			} else if ('function' === typeof player.mute) {
+				lastVolume = volume;
+				player.mute();
+			}
+
+			syncVolumeState();
 		};
 
 		var syncSpeedButtons = function () {
@@ -699,6 +842,7 @@
 			syncTimelineSegments();
 			syncTime();
 			syncProgress();
+			updateCaptionOverlay();
 			syncVolumeState();
 			syncSpeedButtons();
 		};
@@ -708,6 +852,7 @@
 			var playingState = ytApi && ytApi.PlayerState ? ytApi.PlayerState.PLAYING : 1;
 
 			if (!isPlayerReady || !player) {
+				initialPlayPending = true;
 				return;
 			}
 
@@ -719,6 +864,26 @@
 			}
 
 			player.playVideo();
+		};
+
+		var playInitialVideo = function () {
+			var playerState = ytApi && ytApi.PlayerState ? ytApi.PlayerState : null;
+			var state = player && 'function' === typeof player.getPlayerState ? player.getPlayerState() : null;
+			var isNearStart = getPlayerCurrentTime() < 0.35;
+
+			if (!isPlayerReady || !player || !isNearStart) {
+				return;
+			}
+
+			if (
+				!playerState ||
+				-1 === state ||
+				state === playerState.UNSTARTED ||
+				state === playerState.CUED ||
+				state === playerState.PAUSED
+			) {
+				player.playVideo();
+			}
 		};
 
 		var seekFromEvent = function (event) {
@@ -734,6 +899,7 @@
 			player.seekTo(duration * ratio, true);
 			syncProgress();
 			syncTime();
+			updateCaptionOverlay();
 		};
 
 		var nudgeSeek = function (seconds) {
@@ -748,6 +914,7 @@
 			player.seekTo(nextTime, true);
 			syncProgress();
 			syncTime();
+			updateCaptionOverlay();
 		};
 
 		var hideChapterTooltip = function () {
@@ -802,25 +969,102 @@
 			showChapterTooltip(segment);
 		};
 
-		var requestFrameFullscreen = function () {
-			if (document.fullscreenElement) {
-				document.exitFullscreen();
-				return;
-			}
-
-			if (frame.requestFullscreen) {
-				frame.requestFullscreen();
-			}
+		var getFullscreenElement = function () {
+			return document.fullscreenElement || document.webkitFullscreenElement || null;
 		};
 
 		var syncFullscreenState = function () {
-			var isFullscreen = document.fullscreenElement === frame;
+			var isFullscreen = getFullscreenElement() === frame || isPseudoFullscreen;
 
 			frame.classList.toggle('is-fullscreen', isFullscreen);
 			controls.fullscreenButton.setAttribute(
 				'aria-label',
 				isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
 			);
+		};
+
+		var enterPseudoFullscreen = function () {
+			isPseudoFullscreen = true;
+			document.body.classList.add('has-nunlab-player-expanded');
+			frame.classList.add('is-pseudo-fullscreen');
+			syncFullscreenState();
+		};
+
+		var exitPseudoFullscreen = function () {
+			window.clearTimeout(fullscreenFallbackTimer);
+			isPseudoFullscreen = false;
+			document.body.classList.remove('has-nunlab-player-expanded');
+			frame.classList.remove('is-pseudo-fullscreen');
+			syncFullscreenState();
+		};
+
+		var confirmFullscreenRequest = function () {
+			window.clearTimeout(fullscreenFallbackTimer);
+			fullscreenFallbackTimer = window.setTimeout(function () {
+				if (!getFullscreenElement() && !isPseudoFullscreen) {
+					enterPseudoFullscreen();
+				}
+			}, 450);
+		};
+
+		var exitRealFullscreen = function () {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+				return true;
+			}
+
+			if (document.webkitExitFullscreen) {
+				document.webkitExitFullscreen();
+				return true;
+			}
+
+			return false;
+		};
+
+		var requestRealFullscreen = function () {
+			var request = frame.requestFullscreen || frame.webkitRequestFullscreen;
+			var requestResult = null;
+
+			if (!request) {
+				return false;
+			}
+
+			try {
+				requestResult = request.call(frame);
+			} catch (error) {
+				return false;
+			}
+
+			confirmFullscreenRequest();
+
+			if (requestResult && 'function' === typeof requestResult.catch) {
+				requestResult.catch(enterPseudoFullscreen);
+			}
+
+			return true;
+		};
+
+		var requestFrameFullscreen = function () {
+			var shouldUsePseudoFullscreen =
+				window.matchMedia &&
+				window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+			if (getFullscreenElement() === frame) {
+				window.clearTimeout(fullscreenFallbackTimer);
+				exitRealFullscreen();
+				return;
+			}
+
+			if (isPseudoFullscreen) {
+				exitPseudoFullscreen();
+				return;
+			}
+
+			if (shouldUsePseudoFullscreen || !requestRealFullscreen()) {
+				enterPseudoFullscreen();
+			}
+
+			playInitialVideo();
 		};
 
 		var shouldUsePlayerShortcut = function (event) {
@@ -851,6 +1095,12 @@
 		var handlePlayerShortcut = function (event) {
 			var key = event.key.toLowerCase();
 
+			if ('escape' === key && isPseudoFullscreen) {
+				event.preventDefault();
+				exitPseudoFullscreen();
+				return;
+			}
+
 			if (!shouldUsePlayerShortcut(event)) {
 				return;
 			}
@@ -868,21 +1118,37 @@
 			if ('arrowleft' === key) {
 				event.preventDefault();
 				nudgeSeek(-5);
+				return;
 			}
 
 			if ('arrowright' === key) {
 				event.preventDefault();
 				nudgeSeek(5);
+				return;
+			}
+
+			if (('c' === key || 's' === key) && captionCues.length) {
+				if (event.repeat) {
+					return;
+				}
+
+				event.preventDefault();
+				toggleCaptions();
 			}
 		};
 
 		// YouTube owns the iframe; this layer mirrors the small control set the site needs.
 		frame.classList.add('nunlab-player--loaded', 'has-started');
-		frame.replaceChildren(iframe, hitArea, controls.chrome);
+		frame.replaceChildren(iframe, hitArea, controls.captionOverlay, controls.chrome);
 		controls.playButton.focus({ preventScroll: true });
 
 		controls.playButton.addEventListener('click', togglePlay);
 		hitArea.addEventListener('click', togglePlay);
+		if (captionCues.length) {
+			controls.subtitlesButton.addEventListener('click', toggleCaptions);
+		} else {
+			controls.subtitlesButton.disabled = true;
+		}
 		controls.timeline.addEventListener('click', seekFromEvent);
 		controls.timeline.addEventListener('keydown', function (event) {
 			if ('ArrowLeft' === event.key) {
@@ -900,12 +1166,7 @@
 		controls.timeline.addEventListener('blur', hideChapterTooltip);
 
 		controls.soundButton.addEventListener('click', function () {
-			var shouldOpen = controls.volumePanel.hidden;
-
-			closeSpeedMenu();
-			controls.volumePanel.hidden = !shouldOpen;
-			controls.soundButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-			frame.classList.toggle('has-volume-menu-open', shouldOpen);
+			toggleMute();
 		});
 
 		controls.volumeRange.addEventListener('input', function () {
@@ -920,6 +1181,7 @@
 			if (0 === volume) {
 				player.mute();
 			} else {
+				lastVolume = volume;
 				player.unMute();
 			}
 
@@ -953,7 +1215,9 @@
 
 		controls.fullscreenButton.addEventListener('click', requestFrameFullscreen);
 		document.addEventListener('fullscreenchange', syncFullscreenState);
+		document.addEventListener('webkitfullscreenchange', syncFullscreenState);
 		document.addEventListener('keydown', handlePlayerShortcut);
+		window.addEventListener('pagehide', exitPseudoFullscreen);
 		document.addEventListener('click', function (event) {
 			if (!frame.contains(event.target)) {
 				closeControlPanels();
@@ -976,10 +1240,21 @@
 							player = event.target;
 							syncAll();
 							syncPlayState(player.getPlayerState());
+							if (initialPlayPending) {
+								initialPlayPending = false;
+								playInitialVideo();
+							}
 							syncTimer = window.setInterval(syncAll, 250);
 						},
 						onStateChange: function (event) {
 							syncPlayState(event.data);
+							if (
+								ytApi &&
+								ytApi.PlayerState &&
+								event.data === ytApi.PlayerState.PLAYING
+							) {
+								initialPlayPending = false;
+							}
 							syncAll();
 						},
 						onPlaybackRateChange: syncSpeedButtons,

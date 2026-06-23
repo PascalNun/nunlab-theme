@@ -32,6 +32,9 @@ $media_payload      = array_map(
 			'posterUrl'        => isset( $item['poster_url'] ) ? (string) $item['poster_url'] : '',
 			'embedUrl'         => isset( $item['embed_url'] ) ? (string) $item['embed_url'] : '',
 			'autoplayEmbedUrl' => isset( $item['autoplay_embed_url'] ) ? (string) $item['autoplay_embed_url'] : '',
+			'videoUrl'         => isset( $item['video_url'] ) ? (string) $item['video_url'] : '',
+			'mimeType'         => isset( $item['mime_type'] ) ? (string) $item['mime_type'] : '',
+			'caption'          => isset( $item['caption'] ) ? (string) $item['caption'] : '',
 			'alt'              => isset( $item['alt'] ) ? (string) $item['alt'] : '',
 		);
 	},
@@ -87,7 +90,10 @@ $media_payload      = array_map(
 			<button class="project-card__expand-arrow" type="button" data-work-prev>
 				<?php esc_html_e( 'Previous', 'nunlab-theme' ); ?>
 			</button>
-			<p class="project-card__expand-counter" data-work-counter></p>
+			<div class="project-card__media-status">
+				<p class="project-card__media-title" data-work-caption></p>
+				<p class="project-card__expand-counter" data-work-counter></p>
+			</div>
 			<button class="project-card__expand-arrow" type="button" data-work-next>
 				<?php esc_html_e( 'Next', 'nunlab-theme' ); ?>
 			</button>

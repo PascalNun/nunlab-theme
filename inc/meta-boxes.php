@@ -80,6 +80,20 @@ function nunlab_sanitize_project_media_items( $value ) {
 				'poster_id'   => isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0,
 			);
 		}
+
+		if ( 'video' === $item['type'] ) {
+			$video_id = isset( $item['video_id'] ) ? absint( $item['video_id'] ) : 0;
+
+			if ( ! $video_id ) {
+				continue;
+			}
+
+			$items[] = array(
+				'type'      => 'video',
+				'video_id'  => $video_id,
+				'poster_id' => isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0,
+			);
+		}
 	}
 
 	return array_values( $items );
@@ -167,6 +181,26 @@ function nunlab_get_project_media_editor_items( $post_id ) {
 				'posterLabel'      => $poster_id ? get_the_title( $poster_id ) : '',
 			);
 		}
+
+		if ( 'video' === $item['type'] ) {
+			$video_id  = isset( $item['video_id'] ) ? absint( $item['video_id'] ) : 0;
+			$poster_id = isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0;
+
+			if ( ! $video_id ) {
+				continue;
+			}
+
+			$editor_items[] = array(
+				'type'             => 'video',
+				'videoId'          => $video_id,
+				'videoUrl'         => wp_get_attachment_url( $video_id ),
+				'posterId'         => $poster_id,
+				'previewUrl'       => $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '',
+				'posterPreviewUrl' => $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '',
+				'posterLabel'      => $poster_id ? get_the_title( $poster_id ) : '',
+				'label'            => get_the_title( $video_id ),
+			);
+		}
 	}
 
 	return $editor_items;
@@ -202,6 +236,11 @@ function nunlab_get_tool_detail_fields() {
 		'nunlab_tool_walkthrough_chapters' => array(
 			'label'       => __( 'Walkthrough Chapters', 'nunlab-theme' ),
 			'description' => __( 'Optional timestamps for the N:UN player timeline. Use the same format as YouTube chapters, for example: 0:00 Overview.', 'nunlab-theme' ),
+			'type'        => 'textarea',
+		),
+		'nunlab_tool_walkthrough_captions' => array(
+			'label'       => __( 'Walkthrough Captions', 'nunlab-theme' ),
+			'description' => __( 'Optional SRT or WebVTT text used by the N:UN player caption toggle.', 'nunlab-theme' ),
 			'type'        => 'textarea',
 		),
 		'nunlab_tool_github_url'      => array(
@@ -248,6 +287,7 @@ function nunlab_register_theme_meta() {
 							'image_id'    => array( 'type' => 'integer' ),
 							'image_url'   => array( 'type' => 'string' ),
 							'youtube_url' => array( 'type' => 'string' ),
+							'video_id'    => array( 'type' => 'integer' ),
 							'poster_id'   => array( 'type' => 'integer' ),
 						),
 					),
@@ -590,7 +630,7 @@ function nunlab_render_project_media_meta_box( $post ) {
 	?>
 	<div class="nunlab-admin-media" data-project-media-box>
 		<p class="description">
-			<?php esc_html_e( 'Build an ordered sequence of images and YouTube videos for the homepage expansion and the full project page.', 'nunlab-theme' ); ?>
+			<?php esc_html_e( 'Build an ordered sequence of images, uploaded videos and YouTube videos for the homepage expansion and the full project page.', 'nunlab-theme' ); ?>
 		</p>
 
 		<input type="hidden" name="nunlab_project_media_items" value="<?php echo esc_attr( wp_json_encode( $stored_items ) ); ?>" data-media-input />
@@ -602,6 +642,9 @@ function nunlab_render_project_media_meta_box( $post ) {
 			</button>
 			<button type="button" class="button button-secondary" data-media-add-youtube>
 				<?php esc_html_e( 'Add YouTube slide', 'nunlab-theme' ); ?>
+			</button>
+			<button type="button" class="button button-secondary" data-media-add-video>
+				<?php esc_html_e( 'Add video slide', 'nunlab-theme' ); ?>
 			</button>
 			<button type="button" class="button-link button-link-delete" data-media-clear>
 				<?php esc_html_e( 'Clear all', 'nunlab-theme' ); ?>

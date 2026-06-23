@@ -14,6 +14,7 @@ $walkthrough_id    = nunlab_get_youtube_video_id( $walkthrough_url );
 $walkthrough_embed = $walkthrough_id ? nunlab_get_youtube_embed_url( $walkthrough_id, false ) : '';
 $use_custom_youtube_controls = (bool) get_post_meta( get_the_ID(), 'nunlab_tool_youtube_custom_controls', true );
 $walkthrough_chapters = nunlab_parse_video_chapters( (string) get_post_meta( get_the_ID(), 'nunlab_tool_walkthrough_chapters', true ) );
+$walkthrough_captions = nunlab_parse_video_caption_cues( (string) get_post_meta( get_the_ID(), 'nunlab_tool_walkthrough_captions', true ) );
 $tool_icon_url     = esc_url_raw( (string) get_post_meta( get_the_ID(), 'nunlab_tool_icon_url', true ) );
 $tool_links        = nunlab_get_tool_links( get_the_ID() );
 $tool_sections     = nunlab_get_tool_content_sections( get_the_content( null, false ) );
@@ -46,6 +47,9 @@ $chapter_content   = nunlab_render_tool_chapters( $tool_sections );
 			>
 				<?php if ( $walkthrough_chapters ) : ?>
 					<script type="application/json" data-tool-youtube-chapters><?php echo wp_json_encode( $walkthrough_chapters, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?></script>
+				<?php endif; ?>
+				<?php if ( $walkthrough_captions ) : ?>
+					<script type="application/json" data-tool-youtube-captions><?php echo wp_json_encode( $walkthrough_captions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ); ?></script>
 				<?php endif; ?>
 				<div class="tool-walkthrough__load nunlab-player__surface" aria-hidden="true">
 					<?php if ( has_post_thumbnail() ) : ?>

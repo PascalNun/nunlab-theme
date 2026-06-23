@@ -379,6 +379,7 @@
 		var subtitlesButton = null;
 		var speedButton = null;
 		var fullscreenButton = null;
+		var posterImage = null;
 		var posterButton = null;
 		var volumePanel = null;
 		var volumeRange = null;
@@ -388,11 +389,13 @@
 		var chapterCues = [];
 		var captionTracks = getVideoTrackElements(video, ['captions', 'subtitles']);
 		var chapterTracks = getVideoTrackElements(video, ['chapters']);
+		var lastVolume = video.volume > 0 ? video.volume : 1;
 		var isPointerInsidePlayer = false;
 
 		if (
 			video.dataset.nunlabPlayerReady ||
-			video.closest('.nunlab-player, .hero-stage, .project-gallery, .project-card') ||
+			video.closest('.nunlab-player, .hero-stage') ||
+			(!video.hasAttribute('data-nunlab-player') && video.closest('.project-gallery, .project-card')) ||
 			video.classList.contains('wp-video-shortcode')
 		) {
 			return;
@@ -410,6 +413,16 @@
 		wrapper.setAttribute('aria-label', 'Video player');
 		video.parentNode.insertBefore(wrapper, video);
 		wrapper.appendChild(video);
+
+		if (video.poster) {
+			posterImage = document.createElement('img');
+			posterImage.className = 'nunlab-player__poster';
+			posterImage.src = video.poster;
+			posterImage.alt = '';
+			posterImage.decoding = 'async';
+			posterImage.setAttribute('aria-hidden', 'true');
+			wrapper.appendChild(posterImage);
+		}
 
 		captionOverlay = document.createElement('div');
 		captionOverlay.className = 'nunlab-player__captions';
@@ -442,7 +455,6 @@
 		speedMenu = document.createElement('div');
 
 		volumePanel.className = 'nunlab-player__volume-panel';
-		volumePanel.hidden = true;
 		volumeRange.type = 'range';
 		volumeRange.min = '0';
 		volumeRange.max = '1';
@@ -450,7 +462,6 @@
 		volumeRange.value = String(video.volume);
 		volumeRange.setAttribute('aria-label', 'Volume');
 		volumePanel.appendChild(volumeRange);
-		soundButton.setAttribute('aria-expanded', 'false');
 
 		speedMenu.className = 'nunlab-player__speed-menu';
 		speedMenu.hidden = true;
@@ -482,8 +493,6 @@
 		wrapper.appendChild(chrome);
 
 		var closeVolumePanel = function () {
-			volumePanel.hidden = true;
-			soundButton.setAttribute('aria-expanded', 'false');
 			wrapper.classList.remove('has-volume-menu-open');
 		};
 
@@ -570,10 +579,30 @@
 			var isMuted = video.muted || 0 === video.volume;
 			var volume = isMuted ? 0 : video.volume;
 
+			if (video.volume > 0) {
+				lastVolume = video.volume;
+			}
+
 			wrapper.classList.toggle('is-muted', isMuted);
 			wrapper.style.setProperty('--nunlab-player-volume', (volume * 100).toFixed(1) + '%');
 			volumeRange.value = String(volume);
-			soundButton.setAttribute('aria-label', 'Open volume controls');
+			soundButton.setAttribute('aria-label', isMuted ? 'Unmute video' : 'Mute video');
+		};
+
+		var toggleMute = function () {
+			closeSpeedMenu();
+
+			if (video.muted || 0 === video.volume) {
+				if (0 === video.volume) {
+					video.volume = lastVolume || 1;
+				}
+
+				video.muted = false;
+			} else {
+				video.muted = true;
+			}
+
+			syncSoundState();
 		};
 
 		var syncProgress = function () {
@@ -843,17 +872,15 @@
 		});
 
 		soundButton.addEventListener('click', function () {
-			var shouldOpen = volumePanel.hidden;
-
-			closeSpeedMenu();
-			volumePanel.hidden = !shouldOpen;
-			soundButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-			wrapper.classList.toggle('has-volume-menu-open', shouldOpen);
+			toggleMute();
 		});
 
 		volumeRange.addEventListener('input', function () {
 			video.volume = Number(volumeRange.value);
 			video.muted = 0 === video.volume;
+			if (video.volume > 0) {
+				lastVolume = video.volume;
+			}
 			syncSoundState();
 		});
 
@@ -958,11 +985,13 @@
 	// Uploaded content videos get the same N:UN player language as walkthrough posters.
 	var initNativeVideoPlayers = function () {
 		var videos = document.querySelectorAll(
-			'.entry-content .wp-block-video > video[controls], .entry-content > video[controls]'
+			'.entry-content .wp-block-video > video[controls], .entry-content > video[controls], video[data-nunlab-player]'
 		);
 
 		videos.forEach(initNativeVideoPlayer);
 	};
+
+	window.nunlabInitNativeVideoPlayer = initNativeVideoPlayer;
 
 	document.addEventListener('DOMContentLoaded', function () {
 		[

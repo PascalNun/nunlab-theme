@@ -350,14 +350,43 @@ function nunlab_render_editorial_sections( $content, $layout = 'stacked' ) {
 	?>
 	<?php if ( 'continuous' === $layout ) : ?>
 		<div class="editorial-flow editorial-flow--continuous">
+			<?php $heading_count = 0; ?>
 			<?php foreach ( $sections as $section ) : ?>
-				<?php if ( '' !== $section['heading'] ) : ?>
-					<div class="editorial-flow__block editorial-flow__block--heading">
-						<?php echo $section['heading']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php
+				$heading               = isset( $section['heading'] ) ? (string) $section['heading'] : '';
+				$blocks                = isset( $section['blocks'] ) && is_array( $section['blocks'] ) ? $section['blocks'] : array();
+				$first_block           = null;
+				$heading_tier          = '';
+				$heading_group_classes = 'editorial-flow__group editorial-flow__group--heading';
+				$heading_block_classes = 'editorial-flow__block editorial-flow__block--heading';
+
+				if ( '' !== $heading ) {
+					++$heading_count;
+					$heading_tier          = $heading_count <= 2 ? 'lead' : 'compact';
+					$heading_group_classes = trim( $heading_group_classes . ' editorial-flow__group--' . $heading_tier );
+					$heading_block_classes = trim( $heading_block_classes . ' editorial-flow__block--heading-' . $heading_tier );
+				}
+
+				if ( '' !== $heading && ! empty( $blocks ) ) {
+					$first_block = array_shift( $blocks );
+				}
+				?>
+				<?php if ( '' !== $heading && null !== $first_block ) : ?>
+					<div class="<?php echo esc_attr( $heading_group_classes ); ?>">
+						<div class="<?php echo esc_attr( $heading_block_classes ); ?>">
+							<?php echo $heading; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+						<div class="editorial-flow__block editorial-flow__block--body">
+							<?php echo $first_block; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+					</div>
+				<?php elseif ( '' !== $heading ) : ?>
+					<div class="<?php echo esc_attr( $heading_block_classes ); ?>">
+						<?php echo $heading; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endif; ?>
 
-				<?php foreach ( $section['blocks'] as $block_html ) : ?>
+				<?php foreach ( $blocks as $block_html ) : ?>
 					<div class="editorial-flow__block editorial-flow__block--body">
 						<?php echo $block_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
@@ -522,6 +551,37 @@ function nunlab_get_youtube_poster_url( $video_id ) {
 }
 
 /**
+ * Parse a video timecode into seconds.
+ *
+ * @param string $timecode Timecode such as 0:16, 01:02:03.400, or 01:02:03,400.
+ * @return float|null
+ */
+function nunlab_parse_video_timecode( $timecode ) {
+	$timecode = trim( str_replace( ',', '.', (string) $timecode ) );
+	$parts    = array_map( 'floatval', explode( ':', $timecode ) );
+
+	if ( empty( $parts ) ) {
+		return null;
+	}
+
+	foreach ( $parts as $part ) {
+		if ( ! is_finite( $part ) ) {
+			return null;
+		}
+	}
+
+	if ( 3 === count( $parts ) ) {
+		return ( $parts[0] * 3600 ) + ( $parts[1] * 60 ) + $parts[2];
+	}
+
+	if ( 2 === count( $parts ) ) {
+		return ( $parts[0] * 60 ) + $parts[1];
+	}
+
+	return null;
+}
+
+/**
  * Parse timestamp/title lines into player chapter data.
  *
  * Supports both line-separated and compact YouTube-style chapter text, e.g.
@@ -550,16 +610,9 @@ function nunlab_parse_video_chapters( $text ) {
 		$next_start       = isset( $matches[1][ $index + 1 ] ) ? $matches[1][ $index + 1 ][1] : strlen( $text );
 		$title            = substr( $text, $title_start, $next_start - $title_start );
 		$title            = trim( (string) preg_replace( '/^[\s\-–—|:]+/', '', $title ) );
-		$timecode_parts   = array_map( 'floatval', explode( ':', $timecode ) );
-		$timecode_seconds = 0.0;
+		$timecode_seconds = nunlab_parse_video_timecode( $timecode );
 
-		if ( 3 === count( $timecode_parts ) ) {
-			$timecode_seconds = ( $timecode_parts[0] * 3600 ) + ( $timecode_parts[1] * 60 ) + $timecode_parts[2];
-		} elseif ( 2 === count( $timecode_parts ) ) {
-			$timecode_seconds = ( $timecode_parts[0] * 60 ) + $timecode_parts[1];
-		}
-
-		if ( '' === $title || ! is_finite( $timecode_seconds ) ) {
+		if ( '' === $title || null === $timecode_seconds ) {
 			continue;
 		}
 
@@ -577,6 +630,64 @@ function nunlab_parse_video_chapters( $text ) {
 	);
 
 	return $chapters;
+}
+
+/**
+ * Parse SRT or WebVTT caption text into player cue data.
+ *
+ * @param string $text Raw SRT/WebVTT text.
+ * @return array<int, array{start:float,end:float,text:string}>
+ */
+function nunlab_parse_video_caption_cues( $text ) {
+	$text = trim( str_replace( array( "\r\n", "\r" ), "\n", (string) $text ) );
+
+	if ( '' === $text ) {
+		return array();
+	}
+
+	$lines = explode( "\n", $text );
+	$cues  = array();
+	$index = 0;
+	$count = count( $lines );
+
+	while ( $index < $count ) {
+		$line = trim( $lines[ $index ] );
+
+		if ( '' === $line || 'WEBVTT' === strtoupper( $line ) || preg_match( '/^\d+$/', $line ) ) {
+			++$index;
+			continue;
+		}
+
+		if ( false === strpos( $line, '-->' ) ) {
+			++$index;
+			continue;
+		}
+
+		$time_parts = explode( '-->', $line, 2 );
+		$start      = nunlab_parse_video_timecode( $time_parts[0] );
+		$end_text   = trim( preg_split( '/\s+/', trim( $time_parts[1] ) )[0] ?? '' );
+		$end        = nunlab_parse_video_timecode( $end_text );
+		$cue_lines  = array();
+
+		++$index;
+
+		while ( $index < $count && '' !== trim( $lines[ $index ] ) ) {
+			$cue_lines[] = sanitize_text_field( $lines[ $index ] );
+			++$index;
+		}
+
+		if ( null === $start || null === $end || $end <= $start || empty( $cue_lines ) ) {
+			continue;
+		}
+
+		$cues[] = array(
+			'start' => $start,
+			'end'   => $end,
+			'text'  => implode( "\n", $cue_lines ),
+		);
+	}
+
+	return $cues;
 }
 
 /**
@@ -797,6 +908,8 @@ function nunlab_get_project_media_data( $post_id = 0 ) {
 					'image_id' => $image_id,
 					'image_url' => $image_url,
 				);
+
+				continue;
 			}
 
 			if ( 'youtube' === $item['type'] ) {
@@ -810,6 +923,22 @@ function nunlab_get_project_media_data( $post_id = 0 ) {
 					'type'        => 'youtube',
 					'youtube_url' => $youtube_url,
 					'poster_id'   => isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0,
+				);
+
+				continue;
+			}
+
+			if ( 'video' === $item['type'] ) {
+				$video_id = isset( $item['video_id'] ) ? absint( $item['video_id'] ) : 0;
+
+				if ( ! $video_id ) {
+					continue;
+				}
+
+				$items[] = array(
+					'type'      => 'video',
+					'video_id'  => $video_id,
+					'poster_id' => isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0,
 				);
 			}
 		}
@@ -864,23 +993,56 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 			$image_id  = isset( $item['image_id'] ) ? absint( $item['image_id'] ) : 0;
 			$image_url = $image_id ? wp_get_attachment_image_url( $image_id, $size ) : ( isset( $item['image_url'] ) ? esc_url_raw( (string) $item['image_url'] ) : '' );
 			$image_alt = $image_id ? (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
+			$caption   = $image_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $image_id ) ) : '';
 
 			if ( ! $image_url ) {
 				continue;
 			}
 
 			$media[] = array(
-				'type'              => 'image',
-				'id'                => $image_id,
-				'url'               => $image_url,
-				'poster_url'        => $image_url,
-				'alt'               => $image_alt ? $image_alt : sprintf(
+				'type'               => 'image',
+				'id'                 => $image_id,
+				'url'                => $image_url,
+				'poster_url'         => $image_url,
+				'caption'            => $caption,
+				'alt'                => $image_alt ? $image_alt : sprintf(
 					/* translators: %d is the image position. */
 					__( 'Project media image %d', 'nunlab-theme' ),
 					$index + 1
 				),
 				'embed_url'         => '',
 				'autoplay_embed_url' => '',
+				'video_url'         => '',
+				'mime_type'         => '',
+			);
+
+			continue;
+		}
+
+		if ( 'video' === $item['type'] ) {
+			$video_id  = isset( $item['video_id'] ) ? absint( $item['video_id'] ) : 0;
+			$video_url = $video_id ? wp_get_attachment_url( $video_id ) : '';
+			$caption   = $video_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $video_id ) ) : '';
+
+			if ( ! $video_url ) {
+				continue;
+			}
+
+			$poster_id  = isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0;
+			$poster_url = $poster_id ? wp_get_attachment_image_url( $poster_id, $size ) : '';
+			$poster_alt = $poster_id ? (string) get_post_meta( $poster_id, '_wp_attachment_image_alt', true ) : get_the_title( $video_id );
+
+			$media[] = array(
+				'type'               => 'video',
+				'id'                 => $video_id,
+				'url'                => $poster_url,
+				'poster_url'         => $poster_url,
+				'caption'            => $caption,
+				'alt'                => $poster_alt ? $poster_alt : get_the_title( $post_id ),
+				'embed_url'          => '',
+				'autoplay_embed_url' => '',
+				'video_url'          => $video_url,
+				'mime_type'          => (string) get_post_mime_type( $video_id ),
 			);
 
 			continue;
@@ -900,15 +1062,19 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 		$poster_id  = isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0;
 		$poster_url = $poster_id ? wp_get_attachment_image_url( $poster_id, $size ) : nunlab_get_youtube_poster_url( $video_id );
 		$poster_alt = $poster_id ? (string) get_post_meta( $poster_id, '_wp_attachment_image_alt', true ) : get_the_title( $post_id );
+		$caption    = $poster_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $poster_id ) ) : '';
 
 		$media[] = array(
 			'type'               => 'youtube',
 			'id'                 => $poster_id,
 			'url'                => $poster_url,
 			'poster_url'         => $poster_url,
+			'caption'            => $caption,
 			'alt'                => $poster_alt,
 			'embed_url'          => nunlab_get_youtube_embed_url( $video_id, false ),
 			'autoplay_embed_url' => nunlab_get_youtube_embed_url( $video_id, true ),
+			'video_url'          => '',
+			'mime_type'          => '',
 		);
 	}
 
@@ -923,17 +1089,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
  * @return array<string, string|int>
  */
 function nunlab_get_project_primary_image( $post_id = 0, $size = 'large' ) {
-	$post_id    = $post_id ? (int) $post_id : get_the_ID();
-	$media_items = nunlab_get_project_media_items( $post_id, $size );
-
-	if ( $media_items ) {
-		return array(
-			'id'  => isset( $media_items[0]['id'] ) ? (int) $media_items[0]['id'] : 0,
-			'url' => isset( $media_items[0]['poster_url'] ) ? (string) $media_items[0]['poster_url'] : '',
-			'alt' => isset( $media_items[0]['alt'] ) ? (string) $media_items[0]['alt'] : '',
-		);
-	}
-
+	$post_id  = $post_id ? (int) $post_id : get_the_ID();
 	$image_id = get_post_thumbnail_id( $post_id );
 
 	if ( $image_id ) {
@@ -941,6 +1097,16 @@ function nunlab_get_project_primary_image( $post_id = 0, $size = 'large' ) {
 			'id'  => $image_id,
 			'url' => (string) wp_get_attachment_image_url( $image_id, $size ),
 			'alt' => (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
+		);
+	}
+
+	$media_items = nunlab_get_project_media_items( $post_id, $size );
+
+	if ( $media_items ) {
+		return array(
+			'id'  => isset( $media_items[0]['id'] ) ? (int) $media_items[0]['id'] : 0,
+			'url' => isset( $media_items[0]['poster_url'] ) ? (string) $media_items[0]['poster_url'] : '',
+			'alt' => isset( $media_items[0]['alt'] ) ? (string) $media_items[0]['alt'] : '',
 		);
 	}
 

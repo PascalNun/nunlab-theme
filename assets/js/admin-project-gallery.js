@@ -49,6 +49,14 @@
 				};
 			}
 
+			if ('video' === item.type) {
+				return {
+					type: 'video',
+					video_id: item.videoId || 0,
+					poster_id: item.posterId || 0,
+				};
+			}
+
 			return {
 				type: 'image',
 				image_id: item.imageId || 0,
@@ -140,6 +148,45 @@
 			);
 		}
 
+		if ('video' === item.type) {
+			return (
+				'<article class="nunlab-admin-media__item">' +
+				'<div class="nunlab-admin-media__preview">' +
+				createPreviewMarkup(item) +
+				'</div>' +
+				'<div class="nunlab-admin-media__item-body">' +
+				'<p class="nunlab-admin-media__item-type">' +
+				escapeHtml(nunlabProjectMedia.videoTypeLabel) +
+				'</p>' +
+				'<p class="nunlab-admin-media__item-title">' +
+				escapeHtml(item.label || nunlabProjectMedia.videoTypeLabel) +
+				'</p>' +
+				'<div class="nunlab-admin-media__poster-actions">' +
+				'<button type="button" class="button button-secondary" data-media-action="replace-video" data-index="' +
+				index +
+				'">' +
+				escapeHtml(item.videoId ? nunlabProjectMedia.replaceVideoLabel : nunlabProjectMedia.chooseVideoLabel) +
+				'</button>' +
+				'<button type="button" class="button button-secondary" data-media-action="choose-poster" data-index="' +
+				index +
+				'">' +
+				escapeHtml(nunlabProjectMedia.choosePosterLabel) +
+				'</button>' +
+				'<button type="button" class="button-link" data-media-action="clear-poster" data-index="' +
+				index +
+				'">' +
+				escapeHtml(nunlabProjectMedia.clearPosterLabel) +
+				'</button>' +
+				'</div>' +
+				'<p class="description">' +
+				escapeHtml(item.posterId ? item.posterLabel || '' : nunlabProjectMedia.noPosterLabel) +
+				'</p>' +
+				actions +
+				'</div>' +
+				'</article>'
+			);
+		}
+
 		return (
 			'<article class="nunlab-admin-media__item">' +
 			'<div class="nunlab-admin-media__preview">' +
@@ -177,10 +224,11 @@
 		var list = mediaBox.querySelector('[data-media-list]');
 		var addImageButton = mediaBox.querySelector('[data-media-add-image]');
 		var addYoutubeButton = mediaBox.querySelector('[data-media-add-youtube]');
+		var addVideoButton = mediaBox.querySelector('[data-media-add-video]');
 		var clearButton = mediaBox.querySelector('[data-media-clear]');
 		var items = [];
 
-		if (!input || !stateElement || !list || !addImageButton || !addYoutubeButton || !clearButton) {
+		if (!input || !stateElement || !list || !addImageButton || !addYoutubeButton || !addVideoButton || !clearButton) {
 			return;
 		}
 
@@ -230,6 +278,26 @@
 			frame.open();
 		};
 
+		var openVideoFrame = function (options) {
+			var frame = wp.media({
+				title: options.title,
+				button: {
+					text: options.buttonText,
+				},
+				library: {
+					type: 'video',
+				},
+				multiple: options.multiple,
+			});
+
+			frame.on('select', function () {
+				var selection = frame.state().get('selection').toJSON();
+				options.onSelect(selection);
+			});
+
+			frame.open();
+		};
+
 		addImageButton.addEventListener('click', function () {
 			openImageFrame({
 				title: nunlabProjectMedia.addImageTitle,
@@ -261,6 +329,30 @@
 				posterLabel: '',
 			});
 			render();
+		});
+
+		addVideoButton.addEventListener('click', function () {
+			openVideoFrame({
+				title: nunlabProjectMedia.addVideoTitle,
+				buttonText: nunlabProjectMedia.addVideoButton,
+				multiple: true,
+				onSelect: function (selection) {
+					selection.forEach(function (attachment) {
+						items.push({
+							type: 'video',
+							videoId: attachment.id,
+							videoUrl: attachment.url || '',
+							posterId: 0,
+							previewUrl: '',
+							posterPreviewUrl: '',
+							posterLabel: '',
+							label: attachment.title || nunlabProjectMedia.videoTypeLabel,
+						});
+					});
+
+					render();
+				},
+			});
 		});
 
 		clearButton.addEventListener('click', function () {
@@ -319,6 +411,26 @@
 				});
 			}
 
+			if ('replace-video' === action) {
+				openVideoFrame({
+					title: nunlabProjectMedia.replaceVideoTitle,
+					buttonText: nunlabProjectMedia.replaceVideoButton,
+					multiple: false,
+					onSelect: function (selection) {
+						var attachment = selection[0];
+
+						if (!attachment) {
+							return;
+						}
+
+						items[index].videoId = attachment.id;
+						items[index].videoUrl = attachment.url || '';
+						items[index].label = attachment.title || nunlabProjectMedia.videoTypeLabel;
+						render();
+					},
+				});
+			}
+
 			if ('choose-poster' === action) {
 				openImageFrame({
 					title: nunlabProjectMedia.selectPosterTitle,
@@ -344,7 +456,7 @@
 				items[index].posterId = 0;
 				items[index].posterPreviewUrl = '';
 				items[index].posterLabel = '';
-				items[index].previewUrl = getYoutubePoster(items[index].youtubeUrl);
+				items[index].previewUrl = 'youtube' === items[index].type ? getYoutubePoster(items[index].youtubeUrl) : '';
 				render();
 			}
 		});
