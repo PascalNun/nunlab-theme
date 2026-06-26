@@ -43,6 +43,7 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 						$is_native_video_slide = 'video' === $media_item['type'];
 						$is_video_slide        = $is_youtube_slide || $is_native_video_slide;
 						$media_caption         = isset( $media_item['caption'] ) ? (string) $media_item['caption'] : '';
+						$media_credit          = isset( $media_item['credit'] ) ? (string) $media_item['credit'] : '';
 						?>
 					<figure
 						class="project-gallery__slide<?php echo $is_video_slide ? ' project-gallery__slide--video' : ''; ?><?php echo $is_native_video_slide ? ' project-gallery__slide--native-video' : ''; ?>"
@@ -91,6 +92,11 @@ if ( $project_terms && ! is_wp_error( $project_terms ) ) {
 								src="<?php echo esc_url( (string) $media_item['url'] ); ?>"
 								alt="<?php echo esc_attr( (string) ( $media_item['alt'] ? $media_item['alt'] : get_the_title() ) ); ?>"
 							/>
+						<?php endif; ?>
+						<?php if ( '' !== $media_credit ) : ?>
+							<figcaption class="project-gallery__credit">
+								<?php echo esc_html( $media_credit ); ?>
+							</figcaption>
 						<?php endif; ?>
 					</figure>
 				<?php endforeach; ?>

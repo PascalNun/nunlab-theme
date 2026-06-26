@@ -207,23 +207,22 @@
 }
 
 .editorial-section__columns--flow > * {
-	margin-top: 0;
-	margin-bottom: clamp(0.9rem, 1.8vw, 1.25rem);
+	margin: 0;
+	padding-bottom: clamp(0.9rem, 1.8vw, 1.25rem);
 	break-inside: auto;
 	-webkit-column-break-inside: auto;
 }
 
 .editorial-section__columns--flow > *:last-child {
-	margin-bottom: 0;
+	padding-bottom: 0;
 }
 
-.editorial-section__columns--flow :is(p, ul, ol, blockquote) {
-	margin-top: 0;
-	margin-bottom: clamp(0.9rem, 1.8vw, 1.25rem);
+.editorial-section__columns--flow :is(p, ul, ol, blockquote, figure) {
+	margin-block: 0;
 }
 
-.editorial-section__columns--flow :is(p, ul, ol, blockquote):last-child {
-	margin-bottom: 0;
+.editorial-section__columns--flow figure {
+	margin-inline: 0;
 }
 
 .editorial-section__block {
@@ -648,14 +647,22 @@
 }
 
 .project-card__expand-content .editorial-copy--columns > * {
-	margin-top: 0;
-	margin-bottom: clamp(0.8rem, 1.6vw, 1.15rem);
+	margin: 0;
+	padding-bottom: clamp(0.8rem, 1.6vw, 1.15rem);
 	break-inside: auto;
 	-webkit-column-break-inside: auto;
 }
 
 .project-card__expand-content .editorial-copy--columns > *:last-child {
-	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.project-card__expand-content .editorial-copy--columns :is(p, ul, ol, blockquote, figure) {
+	margin-block: 0;
+}
+
+.project-card__expand-content .editorial-copy--columns figure {
+	margin-inline: 0;
 }
 
 .project-card__expand-content .editorial-copy--columns :is(h2, h3, h4, h5, h6) {
@@ -695,11 +702,20 @@
 }
 
 .project-card__expand-content .editorial-section__columns--flow > * {
-	margin-bottom: clamp(0.8rem, 1.6vw, 1.15rem);
+	margin: 0;
+	padding-bottom: clamp(0.8rem, 1.6vw, 1.15rem);
 }
 
 .project-card__expand-content .editorial-section__columns--flow > *:last-child {
-	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.project-card__expand-content .editorial-section__columns--flow :is(p, ul, ol, blockquote, figure) {
+	margin-block: 0;
+}
+
+.project-card__expand-content .editorial-section__columns--flow figure {
+	margin-inline: 0;
 }
 
 .project-card__expand-content .editorial-section__block {

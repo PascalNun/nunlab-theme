@@ -143,6 +143,50 @@ function nunlab_sanitize_project_meta_items( $value ) {
 }
 
 /**
+ * Add a reusable media credit field to attachment edit screens.
+ *
+ * @param array<string, mixed> $form_fields Attachment form fields.
+ * @param WP_Post             $post        Attachment post.
+ * @return array<string, mixed>
+ */
+function nunlab_add_media_credit_attachment_field( $form_fields, $post ) {
+	$form_fields['nunlab_media_credit'] = array(
+		'label' => __( 'Media credit', 'nunlab-theme' ),
+		'input' => 'text',
+		'value' => (string) get_post_meta( $post->ID, 'nunlab_media_credit', true ),
+		'helps' => __( 'Optional credit shown as a small overlay on project media.', 'nunlab-theme' ),
+	);
+
+	return $form_fields;
+}
+add_filter( 'attachment_fields_to_edit', 'nunlab_add_media_credit_attachment_field', 10, 2 );
+
+/**
+ * Save the reusable media credit field from attachment edit screens.
+ *
+ * @param array<string, mixed> $post       Attachment post data.
+ * @param array<string, mixed> $attachment Submitted attachment fields.
+ * @return array<string, mixed>
+ */
+function nunlab_save_media_credit_attachment_field( $post, $attachment ) {
+	if ( ! isset( $post['ID'], $attachment['nunlab_media_credit'] ) ) {
+		return $post;
+	}
+
+	$credit = sanitize_text_field( wp_unslash( (string) $attachment['nunlab_media_credit'] ) );
+
+	if ( '' !== $credit ) {
+		update_post_meta( (int) $post['ID'], 'nunlab_media_credit', $credit );
+		return $post;
+	}
+
+	delete_post_meta( (int) $post['ID'], 'nunlab_media_credit' );
+
+	return $post;
+}
+add_filter( 'attachment_fields_to_save', 'nunlab_save_media_credit_attachment_field', 10, 2 );
+
+/**
  * Return enriched media items for the admin editor UI.
  *
  * @param int $post_id Project post ID.
@@ -270,6 +314,17 @@ function nunlab_get_tool_detail_fields() {
  * Register meta keys used by the theme.
  */
 function nunlab_register_theme_meta() {
+	register_post_meta(
+		'attachment',
+		'nunlab_media_credit',
+		array(
+			'type'              => 'string',
+			'single'            => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'show_in_rest'      => true,
+		)
+	);
+
 	register_post_meta(
 		'project',
 		'nunlab_project_media_items',

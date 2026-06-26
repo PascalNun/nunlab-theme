@@ -722,6 +722,24 @@
 			scrollWindowTo(top, 'smooth');
 		};
 
+		var scrollToWorkMedia = function (item) {
+			var media = item.querySelector('.project-card__media');
+			var header = document.querySelector('.site-header');
+			var headerOffset = header ? header.getBoundingClientRect().height : 0;
+			var target = media || item;
+			var rect = target.getBoundingClientRect();
+			var topBoundary = headerOffset + 18;
+			var lowerBoundary = window.innerHeight * 0.42;
+			var top;
+
+			if (rect.top >= topBoundary && rect.top <= lowerBoundary) {
+				return;
+			}
+
+			top = rect.top + window.scrollY - headerOffset - 18;
+			scrollWindowTo(top, 'smooth');
+		};
+
 		groups.forEach(function (group) {
 			var items = Array.prototype.slice.call(group.querySelectorAll('[data-work-card-item]'));
 
@@ -832,6 +850,7 @@
 				var nav = item.querySelector('[data-work-nav]');
 				var counter = item.querySelector('[data-work-counter]');
 				var caption = item.querySelector('[data-work-caption]');
+				var credit = item.querySelector('[data-work-credit]');
 				var playButton = item.querySelector('[data-work-video-play]');
 				var prev = item.querySelector('[data-work-prev]');
 				var next = item.querySelector('[data-work-next]');
@@ -937,6 +956,11 @@
 					caption.textContent = currentMedia && currentMedia.caption ? currentMedia.caption : '';
 					caption.hidden = '' === caption.textContent;
 				}
+
+				if (credit) {
+					credit.textContent = currentMedia && currentMedia.credit ? currentMedia.credit : '';
+					credit.hidden = '' === credit.textContent;
+				}
 			};
 
 			var playWorkVideo = function (item) {
@@ -974,13 +998,16 @@
 				group.insertBefore(item, nextSibling || null);
 			};
 
-			var closeItem = function (item) {
+			var closeItem = function (item, shouldScroll) {
 				var button = item.querySelector('[data-work-card]');
 				var expand = item.querySelector('[data-work-expand]');
 				var media = item.querySelector('.project-card__media');
 				var nav = item.querySelector('[data-work-nav]');
 				var counter = item.querySelector('[data-work-counter]');
 				var caption = item.querySelector('[data-work-caption]');
+				var credit = item.querySelector('[data-work-credit]');
+
+				shouldScroll = false !== shouldScroll;
 
 				animateItem(item, function () {
 					if (button) {
@@ -1006,15 +1033,22 @@
 						caption.hidden = true;
 					}
 
+					if (credit) {
+						credit.textContent = '';
+						credit.hidden = true;
+					}
+
 					resetWorkVideo(item);
 					clearMediaAspectRatio(media);
 
 					restoreItem(item);
 				});
 
-				window.setTimeout(function () {
-					scrollToWorkItem(item);
-				}, 120);
+				if (shouldScroll) {
+					window.setTimeout(function () {
+						scrollToWorkItem(item);
+					}, 120);
+				}
 			};
 
 			var isWorkCardInternalControl = function (event) {
@@ -1061,6 +1095,7 @@
 							url: button.dataset.workImage,
 							posterUrl: button.dataset.workImage,
 							alt: button.dataset.workImageAlt || button.dataset.workTitle || '',
+							credit: button.dataset.workImageCredit || '',
 							embedUrl: '',
 							autoplayEmbedUrl: '',
 							videoUrl: '',
@@ -1078,6 +1113,9 @@
 
 					item._slideIndex = (item._slideIndex - 1 + item._media.length) % item._media.length;
 					updateExpandedMedia(item);
+					window.requestAnimationFrame(function () {
+						scrollToWorkMedia(item);
+					});
 				};
 
 				var goToNextSlide = function () {
@@ -1087,6 +1125,9 @@
 
 					item._slideIndex = (item._slideIndex + 1) % item._media.length;
 					updateExpandedMedia(item);
+					window.requestAnimationFrame(function () {
+						scrollToWorkMedia(item);
+					});
 				};
 
 				if (prev) {
@@ -1144,7 +1185,7 @@
 					var rowAnchor;
 
 					if (activeItem && activeItem !== item) {
-						closeItem(activeItem);
+						closeItem(activeItem, false);
 					}
 
 					if (item.classList.contains('is-active')) {
@@ -1232,6 +1273,9 @@
 					event.preventDefault();
 					activeItem._slideIndex = (activeItem._slideIndex - 1 + activeItem._media.length) % activeItem._media.length;
 					updateExpandedMedia(activeItem);
+					window.requestAnimationFrame(function () {
+						scrollToWorkMedia(activeItem);
+					});
 					return;
 				}
 
@@ -1239,6 +1283,9 @@
 					event.preventDefault();
 					activeItem._slideIndex = (activeItem._slideIndex + 1) % activeItem._media.length;
 					updateExpandedMedia(activeItem);
+					window.requestAnimationFrame(function () {
+						scrollToWorkMedia(activeItem);
+					});
 				}
 			});
 
@@ -1249,7 +1296,7 @@
 					return;
 				}
 
-				closeItem(activeItem);
+				closeItem(activeItem, false);
 			});
 		});
 	};

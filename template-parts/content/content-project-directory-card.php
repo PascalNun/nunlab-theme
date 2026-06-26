@@ -24,6 +24,7 @@ $media_items        = nunlab_get_project_media_items( get_the_ID(), 'nunlab-proj
 $primary_image      = nunlab_get_project_primary_image( get_the_ID(), 'nunlab-project-large' );
 $image_url          = isset( $primary_image['url'] ) ? (string) $primary_image['url'] : '';
 $image_alt          = isset( $primary_image['alt'] ) ? (string) $primary_image['alt'] : '';
+$image_credit       = isset( $primary_image['credit'] ) ? (string) $primary_image['credit'] : '';
 $media_payload      = array_map(
 	function ( $item ) {
 		return array(
@@ -35,6 +36,7 @@ $media_payload      = array_map(
 			'videoUrl'         => isset( $item['video_url'] ) ? (string) $item['video_url'] : '',
 			'mimeType'         => isset( $item['mime_type'] ) ? (string) $item['mime_type'] : '',
 			'caption'          => isset( $item['caption'] ) ? (string) $item['caption'] : '',
+			'credit'           => isset( $item['credit'] ) ? (string) $item['credit'] : '',
 			'alt'              => isset( $item['alt'] ) ? (string) $item['alt'] : '',
 		);
 	},
@@ -52,6 +54,7 @@ $media_payload      = array_map(
 			data-work-title="<?php echo esc_attr( $presentation_title ); ?>"
 			data-work-image="<?php echo esc_url( $image_url ); ?>"
 			data-work-image-alt="<?php echo esc_attr( $image_alt ? $image_alt : get_the_title() ); ?>"
+			data-work-image-credit="<?php echo esc_attr( $image_credit ); ?>"
 			data-work-media="<?php echo esc_attr( wp_json_encode( $media_payload ) ); ?>"
 		>
 			<div class="project-card__media">
@@ -69,7 +72,9 @@ $media_payload      = array_map(
 				<button class="project-card__video-play" type="button" hidden data-work-video-play>
 					<?php esc_html_e( 'Play video', 'nunlab-theme' ); ?>
 				</button>
-
+				<p class="project-card__media-credit" hidden data-work-credit>
+					<?php echo esc_html( $image_credit ); ?>
+				</p>
 				<span class="project-card__overlay"></span>
 
 				<div class="project-card__body">

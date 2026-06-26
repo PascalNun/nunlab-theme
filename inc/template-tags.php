@@ -158,6 +158,22 @@ function nunlab_render_project_meta_list( $post_id = 0, $extra_class = '' ) {
 }
 
 /**
+ * Return an attachment media credit for project overlays.
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return string
+ */
+function nunlab_get_attachment_media_credit( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return '';
+	}
+
+	return trim( wp_strip_all_tags( (string) get_post_meta( $attachment_id, 'nunlab_media_credit', true ) ) );
+}
+
+/**
  * Return compact public metadata for plugin/tool cards and pages.
  *
  * @param int  $post_id      Tool post ID.
@@ -994,6 +1010,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 			$image_url = $image_id ? wp_get_attachment_image_url( $image_id, $size ) : ( isset( $item['image_url'] ) ? esc_url_raw( (string) $item['image_url'] ) : '' );
 			$image_alt = $image_id ? (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
 			$caption   = $image_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $image_id ) ) : '';
+			$credit    = $image_id ? nunlab_get_attachment_media_credit( $image_id ) : '';
 
 			if ( ! $image_url ) {
 				continue;
@@ -1005,6 +1022,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 				'url'                => $image_url,
 				'poster_url'         => $image_url,
 				'caption'            => $caption,
+				'credit'             => $credit,
 				'alt'                => $image_alt ? $image_alt : sprintf(
 					/* translators: %d is the image position. */
 					__( 'Project media image %d', 'nunlab-theme' ),
@@ -1023,6 +1041,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 			$video_id  = isset( $item['video_id'] ) ? absint( $item['video_id'] ) : 0;
 			$video_url = $video_id ? wp_get_attachment_url( $video_id ) : '';
 			$caption   = $video_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $video_id ) ) : '';
+			$credit    = $video_id ? nunlab_get_attachment_media_credit( $video_id ) : '';
 
 			if ( ! $video_url ) {
 				continue;
@@ -1031,6 +1050,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 			$poster_id  = isset( $item['poster_id'] ) ? absint( $item['poster_id'] ) : 0;
 			$poster_url = $poster_id ? wp_get_attachment_image_url( $poster_id, $size ) : '';
 			$poster_alt = $poster_id ? (string) get_post_meta( $poster_id, '_wp_attachment_image_alt', true ) : get_the_title( $video_id );
+			$credit     = '' !== $credit || ! $poster_id ? $credit : nunlab_get_attachment_media_credit( $poster_id );
 
 			$media[] = array(
 				'type'               => 'video',
@@ -1038,6 +1058,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 				'url'                => $poster_url,
 				'poster_url'         => $poster_url,
 				'caption'            => $caption,
+				'credit'             => $credit,
 				'alt'                => $poster_alt ? $poster_alt : get_the_title( $post_id ),
 				'embed_url'          => '',
 				'autoplay_embed_url' => '',
@@ -1063,6 +1084,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 		$poster_url = $poster_id ? wp_get_attachment_image_url( $poster_id, $size ) : nunlab_get_youtube_poster_url( $video_id );
 		$poster_alt = $poster_id ? (string) get_post_meta( $poster_id, '_wp_attachment_image_alt', true ) : get_the_title( $post_id );
 		$caption    = $poster_id ? wp_strip_all_tags( (string) wp_get_attachment_caption( $poster_id ) ) : '';
+		$credit     = $poster_id ? nunlab_get_attachment_media_credit( $poster_id ) : '';
 
 		$media[] = array(
 			'type'               => 'youtube',
@@ -1070,6 +1092,7 @@ function nunlab_get_project_media_items( $post_id = 0, $size = 'large' ) {
 			'url'                => $poster_url,
 			'poster_url'         => $poster_url,
 			'caption'            => $caption,
+			'credit'             => $credit,
 			'alt'                => $poster_alt,
 			'embed_url'          => nunlab_get_youtube_embed_url( $video_id, false ),
 			'autoplay_embed_url' => nunlab_get_youtube_embed_url( $video_id, true ),
@@ -1094,9 +1117,10 @@ function nunlab_get_project_primary_image( $post_id = 0, $size = 'large' ) {
 
 	if ( $image_id ) {
 		return array(
-			'id'  => $image_id,
-			'url' => (string) wp_get_attachment_image_url( $image_id, $size ),
-			'alt' => (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
+			'id'     => $image_id,
+			'url'    => (string) wp_get_attachment_image_url( $image_id, $size ),
+			'alt'    => (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
+			'credit' => nunlab_get_attachment_media_credit( $image_id ),
 		);
 	}
 
@@ -1104,15 +1128,17 @@ function nunlab_get_project_primary_image( $post_id = 0, $size = 'large' ) {
 
 	if ( $media_items ) {
 		return array(
-			'id'  => isset( $media_items[0]['id'] ) ? (int) $media_items[0]['id'] : 0,
-			'url' => isset( $media_items[0]['poster_url'] ) ? (string) $media_items[0]['poster_url'] : '',
-			'alt' => isset( $media_items[0]['alt'] ) ? (string) $media_items[0]['alt'] : '',
+			'id'     => isset( $media_items[0]['id'] ) ? (int) $media_items[0]['id'] : 0,
+			'url'    => isset( $media_items[0]['poster_url'] ) ? (string) $media_items[0]['poster_url'] : '',
+			'alt'    => isset( $media_items[0]['alt'] ) ? (string) $media_items[0]['alt'] : '',
+			'credit' => isset( $media_items[0]['credit'] ) ? (string) $media_items[0]['credit'] : '',
 		);
 	}
 
 	return array(
-		'id'  => 0,
-		'url' => '',
-		'alt' => '',
+		'id'     => 0,
+		'url'    => '',
+		'alt'    => '',
+		'credit' => '',
 	);
 }

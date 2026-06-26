@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function nunlab_setup() {
 	add_theme_support( 'title-tag' );
 	add_theme_support( 'post-thumbnails' );
+	add_theme_support( 'editor-styles' );
+	add_editor_style( 'assets/css/admin-editor.css' );
 
 	// Larger generated size for project galleries and expanded project cards.
 	add_image_size( 'nunlab-project-large', 2400, 0, false );
