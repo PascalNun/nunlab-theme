@@ -35,7 +35,7 @@ The site is organized around four main content modes:
 - `Home`: a long-scrolling front page with a dark media hero and curated sections
 - `Work`: architectural and design projects powered by the `project` post type
 - `Notebook`: essays, notes, and fragments powered by normal WordPress posts
-- `Plugins`: tools and Grasshopper/Rhino plugin pages powered by the `tool` post type
+- `Tools`: plugins, utilities, and small software pages powered by the `tool` post type
 
 Supporting pages include `About`, `Contact`, `Manifesto`, and `Legal Notice`.
 
@@ -71,7 +71,7 @@ NunLAB/
 │   ├── icons/                # UI icons
 │   ├── images/
 │   │   ├── brand/            # logo and favicon assets
-│   │   └── tools/            # plugin/tool imagery
+│   │   └── tools/            # tool imagery
 │   ├── js/                   # theme behavior
 │   ├── media/hero/           # hero video, posters, sequence frames
 │   └── scss/                 # source styles
@@ -101,7 +101,7 @@ NunLAB/
 │   └── site/
 ├── front-page.php            # scrolling homepage
 ├── home.php                  # notebook index
-├── page-plugins.php          # plugins index
+├── page-plugins.php          # tools index template
 ├── archive-project.php       # work archive
 ├── single-project.php
 ├── single-tool.php
@@ -119,11 +119,11 @@ Normal WordPress pages hold stable editorial surfaces:
 - `Home`
 - `About`
 - `Manifesto`
-- `Plugins`
+- `Tools`
 - `Contact`
 - `Legal Notice`
 
-The `Plugins` page uses the `Plugins Index` template and queries published `tool` entries.
+The `Tools` page uses the `Tools Index` template and queries published `tool` entries.
 
 ### Notebook
 
@@ -149,20 +149,20 @@ Default `project_type` terms:
 - `Research`
 - `Build`
 
-### Plugins / Tools
+### Tools
 
-The internal post type is `tool`; the public language is `Plugins`.
+The internal post type is `tool`; the public language is `Tools`.
 
 Tool entries support:
 
 - title and excerpt
 - featured image or poster
-- optional plugin icon URL
+- optional tool icon URL
 - optional YouTube walkthrough URL
 - external links for GitHub, Food4Rhino, documentation, and release/download
 - editor content structured into overview and chapter-like sections
 
-The first intended plugin entry is `RhinoSpatial`:
+The first intended tool entry is `RhinoSpatial`:
 
 ```text
 https://github.com/PascalNun/RhinoSpatial
@@ -279,11 +279,11 @@ php -d error_reporting=24575 /opt/homebrew/bin/wp --path=.wp-local eval-file scr
 1. Open `Posts`
 2. Create or edit notebook entries normally
 
-### Plugins
+### Tools
 
-1. Open `Site Plugins`
-2. Create or edit plugin entries
-3. Add links and walkthrough data in `Plugin Details`
+1. Open `Site Tools`
+2. Create or edit tool entries
+3. Add links and walkthrough data in `Tool Details`
 4. Use editor headings and content for overview/chapter sections
 
 ### Legal Footer
@@ -334,7 +334,7 @@ Theme-only sync:
 ./scripts/deploy-vps.sh --sync-only
 ```
 
-`scripts/bootstrap-live-wordpress.php` ensures the basic live WordPress structure exists: main pages, menus, homepage settings, and base options. Authored portfolio, notebook, plugin, and legal content is managed directly in WordPress.
+`scripts/bootstrap-live-wordpress.php` ensures the basic live WordPress structure exists: main pages, menus, homepage settings, and base options. Authored portfolio, notebook, tool, and legal content is managed directly in WordPress.
 
 ## Server-Side Services
 
@@ -408,7 +408,7 @@ Theme code lives in Git.
 
 Content lives in WordPress.
 
-The repository should stay lean enough to understand directly. The live site can grow through authored work, writing, images, and plugin documentation without forcing the theme into a heavier system than the project needs.
+The repository should stay lean enough to understand directly. The live site can grow through authored work, writing, images, and tool documentation without forcing the theme into a heavier system than the project needs.
 
 
 ## License

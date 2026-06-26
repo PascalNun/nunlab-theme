@@ -25,18 +25,25 @@ update_option( 'blogname', 'N:UN' );
 /**
  * Ensure a published page exists for the requested slug.
  *
- * @param string $title Page title.
- * @param string $slug  Page slug.
+ * @param string $title       Page title.
+ * @param string $slug        Page slug.
+ * @param string $legacy_slug Optional previous slug to migrate.
  * @return int
  */
-function nunlab_ensure_page( string $title, string $slug ): int {
+function nunlab_ensure_page( string $title, string $slug, string $legacy_slug = '' ): int {
 	$page = get_page_by_path( $slug );
 
+	if ( ! $page instanceof WP_Post && '' !== $legacy_slug ) {
+		$page = get_page_by_path( $legacy_slug );
+	}
+
 	if ( $page instanceof WP_Post ) {
-		if ( 'publish' !== $page->post_status || 'closed' !== $page->comment_status || 'closed' !== $page->ping_status ) {
+		if ( $title !== $page->post_title || $slug !== $page->post_name || 'publish' !== $page->post_status || 'closed' !== $page->comment_status || 'closed' !== $page->ping_status ) {
 			wp_update_post(
 				array(
 					'ID'             => $page->ID,
+					'post_title'     => $title,
+					'post_name'      => $slug,
 					'post_status'    => 'publish',
 					'comment_status' => 'closed',
 					'ping_status'    => 'closed',
@@ -95,6 +102,11 @@ function nunlab_ensure_menu_item( int $menu_id, array $item_args ): void {
 			$matches_custom = 'custom' === $existing_item->type && $title === $existing_item->title && $url === $existing_item->url;
 
 			if ( $matches_object || $matches_custom ) {
+				if ( $title && $title !== $existing_item->title ) {
+					$item_args['menu-item-db-id'] = $existing_item->ID;
+					wp_update_nav_menu_item( $menu_id, $existing_item->ID, $item_args );
+				}
+
 				return;
 			}
 		}
@@ -185,7 +197,7 @@ $page_ids = array(
 	'about'     => nunlab_ensure_page( 'About', 'about' ),
 	'manifesto' => nunlab_ensure_page( 'Manifesto', 'manifesto' ),
 	'notebook'  => nunlab_ensure_page( 'Notebook', 'notebook' ),
-	'plugins'   => nunlab_ensure_page( 'Plugins', 'plugins' ),
+	'tools'     => nunlab_ensure_page( 'Tools', 'tools', 'plugins' ),
 	'contact'   => nunlab_ensure_page( 'Contact', 'contact' ),
 	'legal'     => nunlab_ensure_page( 'Legal Notice', 'legal-notice' ),
 	'privacy'   => nunlab_ensure_page( 'Privacy Policy', 'privacy-policy' ),
@@ -196,6 +208,7 @@ nunlab_trash_default_content();
 update_option( 'show_on_front', 'page' );
 update_option( 'page_on_front', $page_ids['home'] );
 update_option( 'page_for_posts', $page_ids['notebook'] );
+update_post_meta( $page_ids['tools'], '_wp_page_template', 'page-plugins.php' );
 
 update_post_meta( $page_ids['home'], 'nunlab_about_page_id', $page_ids['about'] );
 update_post_meta( $page_ids['home'], 'nunlab_hero_title', 'Architecture, design, research, tools, and making.' );
@@ -223,7 +236,7 @@ nunlab_ensure_menu_item(
 
 nunlab_ensure_work_menu_item( $menu_id );
 
-foreach ( array( 'about', 'notebook', 'plugins', 'contact' ) as $slug ) {
+foreach ( array( 'about', 'notebook', 'tools', 'contact' ) as $slug ) {
 	nunlab_ensure_menu_item(
 		$menu_id,
 		array(
@@ -272,7 +285,7 @@ echo wp_json_encode(
 		'posts_page'   => $page_ids['notebook'],
 		'about_page'   => $page_ids['about'],
 		'manifesto'    => $page_ids['manifesto'],
-		'plugins_page' => $page_ids['plugins'],
+		'tools_page'   => $page_ids['tools'],
 		'contact_page' => $page_ids['contact'],
 		'privacy_page' => $page_ids['privacy'],
 		'menu_id'      => $menu_id,

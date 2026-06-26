@@ -251,7 +251,7 @@ function nunlab_get_project_media_editor_items( $post_id ) {
 }
 
 /**
- * Return the editable fields for plugin/tool entries.
+ * Return the editable fields for tool entries.
  *
  * @return array<string, array<string, string>>
  */
@@ -264,17 +264,17 @@ function nunlab_get_tool_detail_fields() {
 		),
 		'nunlab_tool_version'         => array(
 			'label'       => __( 'Current Version', 'nunlab-theme' ),
-			'description' => __( 'Optional release/version label shown near the plugin title.', 'nunlab-theme' ),
+			'description' => __( 'Optional release/version label shown near the tool title.', 'nunlab-theme' ),
 			'type'        => 'text',
 		),
 		'nunlab_tool_icon_url'        => array(
-			'label'       => __( 'Plugin Icon URL', 'nunlab-theme' ),
-			'description' => __( 'Optional small SVG or image icon shown beside the plugin title.', 'nunlab-theme' ),
+			'label'       => __( 'Tool Icon URL', 'nunlab-theme' ),
+			'description' => __( 'Optional small SVG or image icon shown beside the tool title.', 'nunlab-theme' ),
 			'type'        => 'url',
 		),
 		'nunlab_tool_walkthrough_url' => array(
 			'label'       => __( 'YouTube Walkthrough URL', 'nunlab-theme' ),
-			'description' => __( 'A YouTube URL for the walkthrough video displayed near the top of the plugin page.', 'nunlab-theme' ),
+			'description' => __( 'A YouTube URL for the walkthrough video displayed near the top of the tool page.', 'nunlab-theme' ),
 			'type'        => 'url',
 		),
 		'nunlab_tool_walkthrough_chapters' => array(
@@ -478,12 +478,12 @@ function nunlab_add_project_meta_boxes() {
 add_action( 'add_meta_boxes_project', 'nunlab_add_project_meta_boxes' );
 
 /**
- * Add the plugin/tool detail meta box.
+ * Add the tool detail meta box.
  */
 function nunlab_add_tool_meta_boxes() {
 	add_meta_box(
 		'nunlab-tool-details',
-		esc_html__( 'Plugin Details', 'nunlab-theme' ),
+		esc_html__( 'Tool Details', 'nunlab-theme' ),
 		'nunlab_render_tool_details_meta_box',
 		'tool',
 		'side',
@@ -589,7 +589,7 @@ function nunlab_render_project_meta_box( $post ) {
 }
 
 /**
- * Render the plugin/tool detail meta box.
+ * Render the tool detail meta box.
  *
  * @param WP_Post $post Current tool.
  */
@@ -641,7 +641,7 @@ function nunlab_render_tool_details_meta_box( $post ) {
 		</p>
 
 		<p class="description">
-			<?php esc_html_e( 'Use the featured image for the plugin card/poster. Use the main editor for chapter-style sections: start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
+			<?php esc_html_e( 'Use the featured image for the tool card/poster. Use the main editor for chapter-style sections: start each chapter with a Heading block, then add text and screenshots below it.', 'nunlab-theme' ); ?>
 		</p>
 	</div>
 	<?php
@@ -922,7 +922,7 @@ function nunlab_save_project_meta_items_meta( $post_id ) {
 add_action( 'save_post_project', 'nunlab_save_project_meta_items_meta' );
 
 /**
- * Save plugin/tool detail meta.
+ * Save tool detail meta.
  *
  * @param int $post_id Post ID.
  */

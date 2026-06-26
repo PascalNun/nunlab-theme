@@ -6,6 +6,7 @@ thumbs.db
 node_modules/
 .wp-local/
 .local/
+tmp/
 __pycache__/
 *.py[cod]
 *.log

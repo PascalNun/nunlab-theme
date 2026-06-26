@@ -174,10 +174,10 @@ function nunlab_get_attachment_media_credit( $attachment_id ) {
 }
 
 /**
- * Return compact public metadata for plugin/tool cards and pages.
+ * Return compact public metadata for tool cards and pages.
  *
  * @param int  $post_id      Tool post ID.
- * @param bool $include_type Whether to include the "Plugin" type label.
+ * @param bool $include_type Whether to include the "Tool" type label.
  * @return string[]
  */
 function nunlab_get_tool_meta_parts( $post_id = 0, $include_type = true ) {
@@ -185,7 +185,7 @@ function nunlab_get_tool_meta_parts( $post_id = 0, $include_type = true ) {
 	$parts   = array();
 
 	if ( $include_type ) {
-		$parts[] = __( 'Plugin', 'nunlab-theme' );
+		$parts[] = __( 'Tool', 'nunlab-theme' );
 	}
 
 	$parts[] = trim( (string) get_post_meta( $post_id, 'nunlab_tool_status', true ) );
@@ -707,7 +707,7 @@ function nunlab_parse_video_caption_cues( $text ) {
 }
 
 /**
- * Return public external links for a plugin/tool entry.
+ * Return public external links for a tool entry.
  *
  * @param int $post_id Tool post ID.
  * @return array<int, array{label:string, url:string}>
@@ -747,7 +747,7 @@ function nunlab_get_tool_links( $post_id = 0 ) {
 }
 
 /**
- * Return overview blocks and chapter sections for plugin/tool pages.
+ * Return overview blocks and chapter sections for tool pages.
  *
  * Authoring contract: blocks before the first Heading become the overview
  * intro; each Heading after that starts a jumpable chapter.
@@ -805,7 +805,7 @@ function nunlab_get_tool_content_sections( $content ) {
 }
 
 /**
- * Render the generated overview card for a plugin/tool page.
+ * Render the generated overview card for a tool page.
  *
  * @param array $tool_sections Sections from nunlab_get_tool_content_sections().
  * @return string
@@ -851,7 +851,7 @@ function nunlab_render_tool_overview( $tool_sections ) {
 }
 
 /**
- * Render chapter-style content for plugin/tool pages.
+ * Render chapter-style content for tool pages.
  *
  * @param array $tool_sections Sections from nunlab_get_tool_content_sections().
  * @return string

@@ -14,7 +14,7 @@ $post_type_object = $post_type ? get_post_type_object( $post_type ) : null;
 $link_labels      = array(
 	'post'    => __( 'Read entry', 'nunlab-theme' ),
 	'project' => __( 'Open project', 'nunlab-theme' ),
-	'tool'    => __( 'Open plugin', 'nunlab-theme' ),
+	'tool'    => __( 'Open tool', 'nunlab-theme' ),
 );
 $link_label       = isset( $link_labels[ $post_type ] ) ? $link_labels[ $post_type ] : __( 'Open item', 'nunlab-theme' );
 $card_classes     = array( 'content-card' );

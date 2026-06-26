@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Plugin Content
+ * Single Tool Content
  *
  * @package nunlab-theme
  */
@@ -80,7 +80,7 @@ $chapter_content   = nunlab_render_tool_chapters( $tool_sections );
 	<?php endif; ?>
 
 	<?php if ( $tool_links ) : ?>
-		<nav class="tool-quick-links" aria-label="<?php esc_attr_e( 'Plugin links', 'nunlab-theme' ); ?>">
+		<nav class="tool-quick-links" aria-label="<?php esc_attr_e( 'Tool links', 'nunlab-theme' ); ?>">
 			<span class="tool-quick-links__label"><?php esc_html_e( 'Quick links:', 'nunlab-theme' ); ?></span>
 			<span class="tool-quick-links__items">
 				<?php foreach ( $tool_links as $tool_link ) : ?>

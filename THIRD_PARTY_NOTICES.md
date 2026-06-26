@@ -19,6 +19,6 @@ The main direct development dependency is Sass.
 
 ## Site-Specific Assets
 
-The N:UN name, logo, brand artwork, portfolio imagery, hero media, and plugin presentation images are project-specific assets by Pascal Nünninghoff unless noted otherwise.
+The N:UN name, logo, brand artwork, portfolio imagery, hero media, and tool presentation images are project-specific assets by Pascal Nünninghoff unless noted otherwise.
 
 They are included to make the site/theme understandable as a complete design system. Reuse of the theme code should generally replace these assets with project-specific equivalents.

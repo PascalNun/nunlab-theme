@@ -34,7 +34,7 @@ $search_dark_uri = nunlab_get_theme_asset_uri( 'assets/icons/search_icon_Dark.sv
 			</button>
 		</form>
 		<div class="search-layer__meta">
-				<p class="search-layer__hint"><?php esc_html_e( 'Search projects, notebook entries, plugins, and pages.', 'nunlab-theme' ); ?></p>
+				<p class="search-layer__hint"><?php esc_html_e( 'Search projects, notebook entries, tools, and pages.', 'nunlab-theme' ); ?></p>
 			<button class="search-layer__close" type="button" data-search-close>
 				<?php esc_html_e( 'Close', 'nunlab-theme' ); ?>
 			</button>

@@ -32,6 +32,35 @@ function nunlab_body_classes( $classes ) {
 add_filter( 'body_class', 'nunlab_body_classes' );
 
 /**
+ * Keep legacy plugin URLs working after the public section became Tools.
+ */
+function nunlab_redirect_legacy_plugin_urls() {
+	if ( is_admin() || wp_doing_ajax() ) {
+		return;
+	}
+
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path        = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+	$query       = (string) wp_parse_url( $request_uri, PHP_URL_QUERY );
+	$path        = '/' . ltrim( $path, '/' );
+
+	if ( '/plugins' !== untrailingslashit( $path ) && ! str_starts_with( $path, '/plugins/' ) ) {
+		return;
+	}
+
+	$suffix = substr( $path, strlen( '/plugins' ) );
+	$target = home_url( '/tools' . ( '' === $suffix ? '/' : $suffix ) );
+
+	if ( '' !== $query ) {
+		$target .= '?' . $query;
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'nunlab_redirect_legacy_plugin_urls', 1 );
+
+/**
  * Point selected primary menu items to homepage anchors.
  *
  * @param WP_Post[] $items Menu items.

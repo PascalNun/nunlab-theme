@@ -54,26 +54,26 @@ function nunlab_register_post_types() {
 		'tool',
 		array(
 			'labels'       => array(
-				'name'               => esc_html__( 'Plugins', 'nunlab-theme' ),
-				'singular_name'      => esc_html__( 'Plugin', 'nunlab-theme' ),
-				'add_new'            => esc_html__( 'Add Plugin', 'nunlab-theme' ),
-				'add_new_item'       => esc_html__( 'Add New Plugin', 'nunlab-theme' ),
-				'edit_item'          => esc_html__( 'Edit Plugin', 'nunlab-theme' ),
-				'new_item'           => esc_html__( 'New Plugin', 'nunlab-theme' ),
-				'view_item'          => esc_html__( 'View Plugin', 'nunlab-theme' ),
-				'view_items'         => esc_html__( 'View Plugins', 'nunlab-theme' ),
-				'search_items'       => esc_html__( 'Search Plugins', 'nunlab-theme' ),
-				'not_found'          => esc_html__( 'No plugins found.', 'nunlab-theme' ),
-				'not_found_in_trash' => esc_html__( 'No plugins found in Trash.', 'nunlab-theme' ),
-				'all_items'          => esc_html__( 'Plugins', 'nunlab-theme' ),
-				'archives'           => esc_html__( 'Plugin Archives', 'nunlab-theme' ),
-				'menu_name'          => esc_html__( 'Site Plugins', 'nunlab-theme' ),
+				'name'               => esc_html__( 'Tools', 'nunlab-theme' ),
+				'singular_name'      => esc_html__( 'Tool', 'nunlab-theme' ),
+				'add_new'            => esc_html__( 'Add Tool', 'nunlab-theme' ),
+				'add_new_item'       => esc_html__( 'Add New Tool', 'nunlab-theme' ),
+				'edit_item'          => esc_html__( 'Edit Tool', 'nunlab-theme' ),
+				'new_item'           => esc_html__( 'New Tool', 'nunlab-theme' ),
+				'view_item'          => esc_html__( 'View Tool', 'nunlab-theme' ),
+				'view_items'         => esc_html__( 'View Tools', 'nunlab-theme' ),
+				'search_items'       => esc_html__( 'Search Tools', 'nunlab-theme' ),
+				'not_found'          => esc_html__( 'No tools found.', 'nunlab-theme' ),
+				'not_found_in_trash' => esc_html__( 'No tools found in Trash.', 'nunlab-theme' ),
+				'all_items'          => esc_html__( 'Tools', 'nunlab-theme' ),
+				'archives'           => esc_html__( 'Tool Archives', 'nunlab-theme' ),
+				'menu_name'          => esc_html__( 'Site Tools', 'nunlab-theme' ),
 			),
 			'public'       => true,
 			'has_archive'  => false,
-			'menu_icon'    => 'dashicons-admin-plugins',
+			'menu_icon'    => 'dashicons-admin-tools',
 			'rewrite'      => array(
-				'slug'       => 'plugins',
+				'slug'       => 'tools',
 				'with_front' => false,
 			),
 			'show_in_rest' => true,
@@ -145,7 +145,7 @@ add_action( 'init', 'nunlab_seed_project_type_terms', 20 );
  * Flush rewrite rules once when the theme route schema changes.
  */
 function nunlab_maybe_flush_rewrite_rules() {
-	$rewrite_schema_version = '2026-06-10-tools';
+	$rewrite_schema_version = '2026-06-26-tools-route';
 
 	if ( get_option( 'nunlab_rewrite_schema_version' ) === $rewrite_schema_version ) {
 		return;

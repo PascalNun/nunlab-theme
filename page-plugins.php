@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugins Index Page Template
+ * Tools Index Page Template
  *
- * Template Name: Plugins Index
+ * Template Name: Tools Index
  *
  * @package nunlab-theme
  */
@@ -34,7 +34,7 @@ get_header();
 
 			$plugins_intro       = trim( (string) apply_filters( 'the_content', get_the_content( null, false ) ) );
 			$has_plugins_intro   = '' !== trim( wp_strip_all_tags( $plugins_intro ) ) || nunlab_block_has_visible_media_markup( $plugins_intro );
-			$plugins_description = has_excerpt() ? get_the_excerpt() : __( 'Plugins and practical systems for moving between data, geometry, and design.', 'nunlab-theme' );
+			$plugins_description = has_excerpt() ? get_the_excerpt() : __( 'Plugins, utilities, and practical systems for moving between data, geometry, and design.', 'nunlab-theme' );
 			?>
 			<header class="archive-header archive-header--plugins">
 				<h1 class="archive-title"><?php the_title(); ?></h1>
@@ -64,7 +64,7 @@ get_header();
 		<?php else : ?>
 			<section class="content-empty content-empty--plugins">
 				<p class="archive-eyebrow"><?php esc_html_e( 'Coming Soon', 'nunlab-theme' ); ?></p>
-				<h2 class="content-empty__title"><?php esc_html_e( 'Plugin cards will appear here once entries are published.', 'nunlab-theme' ); ?></h2>
+				<h2 class="content-empty__title"><?php esc_html_e( 'Tool cards will appear here once entries are published.', 'nunlab-theme' ); ?></h2>
 				<p class="content-empty__text">
 					<?php esc_html_e( 'The section is ready for RhinoSpatial and future tools authored in WordPress.', 'nunlab-theme' ); ?>
 				</p>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Plugin Template
+ * Single Tool Template
  *
  * @package nunlab-theme
  */
